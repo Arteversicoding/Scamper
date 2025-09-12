@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - AI Project Planner</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+
+    <style>
+        .stat-card {
+            transition: all 0.3s ease;
+        }
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+    </style>
+    <script type="module" src="auth-guard.js"></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center space-x-4">
+                    <a href="index.html" class="text-2xl font-bold text-cyan-600">
+                        <i class="fas fa-graduation-cap mr-2"></i>AI Project Planner
+                    </a>
+                    <span class="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm font-medium">ADMIN</span>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="index.html" class="text-gray-600 hover:text-cyan-600 transition-colors">
+                        <i class="fas fa-home mr-2"></i>Beranda
+                    </a>
+                    
+                    <button onclick="logout()" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors">
+                        <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-gray-800 mb-2">Admin Dashboard</h1>
+            <p class="text-gray-600">Overview sistem AI Project Planner untuk Pendidik</p>
+        </div>
+
+        <!-- Stats Overview -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="stat-card bg-white rounded-xl shadow-lg p-6">
+                <div class="flex items-center">
+                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-users text-blue-600 text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Total Users</p>
+                        <p class="text-2xl font-bold text-gray-900" id="totalUsers">0</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stat-card bg-white rounded-xl shadow-lg p-6">
+                <div class="flex items-center">
+                    <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-book text-green-600 text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Total RPP</p>
+                        <p class="text-2xl font-bold text-gray-900" id="totalMaterials">0</p>
+                    </div>
+                </div>
+            </div>
+
+            
+
+            <div class="stat-card bg-white rounded-xl shadow-lg p-6">
+                <div class="flex items-center">
+                    <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-comments text-purple-600 text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Sesi AI Planner</p>
+                        <p class="text-2xl font-bold text-gray-900" id="totalChats">0</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stat-card bg-white rounded-xl shadow-lg p-6">
+                <div class="flex items-center">
+                    <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-chart-bar text-orange-600 text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Feedback Guru</p>
+                        <p class="text-2xl font-bold text-gray-900" id="surveyResponses">0</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        
+
+        </div>
+
+        <!-- Materials Manager -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+            <h3 class="text-xl font-semibold text-gray-800 mb-6">Materials Manager</h3>
+
+            <!-- Upload Form -->
+            <form id="materialForm" class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end mb-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Judul</label>
+                    <input id="materialTitle" type="text" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Masukkan judul materi" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Deskripsi</label>
+                    <input id="materialDesc" type="text" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Deskripsi singkat" required>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <input id="materialFile" type="file" class="w-full text-sm">
+                    <input id="materialLink" type="url" placeholder="Atau tempelkan URL materi" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <div class="flex gap-2">
+                        <button type="submit" id="saveMaterialBtn" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50">
+Simpan
+</button>
+                    </div>
+                </div>
+            </form>
+
+            <!-- List -->
+            <div id="materialsList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="bg-white rounded-xl shadow-lg p-6">
+            <h3 class="text-xl font-semibold text-gray-800 mb-6">Quick Actions</h3>
+            
+            <div class="flex flex-wrap gap-4">
+                <button onclick="exportData()" class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors">
+                    <i class="fas fa-download mr-2"></i>Export Data
+                </button>
+                <button onclick="exportSurveyData()" class="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors">
+                    <i class="fas fa-chart-line mr-2"></i>Export Survey Data
+                </button>
+                <button onclick="refreshStats()" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors">
+                    <i class="fas fa-refresh mr-2"></i>Refresh Stats
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div id="notification" class="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg transform translate-x-full transition-transform duration-300 z-50">
+        <div class="flex items-center">
+            <i class="fas fa-check-circle mr-2"></i>
+            <span id="notificationText"></span>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script type="module">
+        // Konfigurasi Supabase
+        const SUPABASE_URL = "https://zlcislycukayjgjhozjy.supabase.co";
+        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpsY2lzbHljdWtheWpnamhvemp5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzOTcyNTcsImV4cCI6MjA3MTk3MzI1N30.XF_hxADjk1azFH3PfqK1i_edNlFLwPeZuzXvPmAx4XM";
+        const BUCKET = "upload";
+
+        // Import services dan Supabase client
+        const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
+        import { AuthService } from './auth-service.js';
+        import { listenMaterialsRealtime, createMaterial, updateMaterial, deleteMaterial } from './materials-service.js';
+
+        // Inisialisasi
+        const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+        const authService = new AuthService();
+
+        // Fungsi untuk upload file ke Supabase Storage
+        async function uploadFileToSupabase(file, title, description) {
+            try {
+                const fileExt = file.name.split('.').pop();
+                
+                const sanitize = (str) => str.toLowerCase()
+                    .replace(/\s+/g, '-') 
+                    .replace(/[^\w\-]+/g, '') 
+                    .replace(/\-\-+/g, '-') 
+                    .replace(/^-+/, '') 
+                    .replace(/-+$/, '');
+
+                const baseName = `${sanitize(title)}-${sanitize(description)}`;
+                const fileName = `${baseName.substring(0, 100)}_${Date.now()}.${fileExt}`;
+
+                const { data, error } = await supabase.storage
+                    .from(BUCKET)
+                    .upload(fileName, file);
+
+                if (error) {
+                    throw error;
+                }
+
+                const { data: { publicUrl } } = supabase.storage
+                    .from(BUCKET)
+                    .getPublicUrl(fileName);
+
+                if (!publicUrl) {
+                    throw new Error('Gagal mendapatkan URL publik untuk file yang diunggah.');
+                }
+                
+                return {
+                    success: true,
+                    fileName: fileName,
+                    publicUrl: publicUrl,
+                    fullData: data
+                };
+            } catch (error) {
+                console.error('Upload error:', error);
+                throw error;
+            }
+        }
+
+        // Handler untuk form simpan materi
+        document.getElementById("materialForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const saveBtn = document.getElementById("saveMaterialBtn");
+            const title = document.getElementById("materialTitle").value.trim();
+            const description = document.getElementById("materialDesc").value.trim();
+            const fileInput = document.getElementById("materialFile");
+            const file = fileInput.files[0];
+            const linkUrl = document.getElementById("materialLink").value.trim();
+
+            saveBtn.disabled = true;
+            saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Menyimpan...';
+
+            if (!title || !description) {
+                showNotification("❌ Judul & Deskripsi wajib diisi!", "error");
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = 'Simpan';
+                return;
+            }
+
+            if (!file && !linkUrl) {
+                showNotification("❌ Pilih file ATAU masukkan link!", "error");
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = 'Simpan';
+                return;
+            }
+
+            try {
+                let finalLink = linkUrl;
+                let uploadResult = null;
+                if (file) {
+                    uploadResult = await uploadFileToSupabase(file, title, description);
+                    finalLink = uploadResult.publicUrl;
+                }
+
+                await createMaterial({ 
+                    title, 
+                    description, 
+                    linkUrl: finalLink, 
+                    filePath: file ? uploadResult.fileName : '' 
+                });
+                showNotification("✅ Materi berhasil disimpan!", "success");
+                document.getElementById("materialForm").reset();
+
+            } catch (err) {
+                console.error("Gagal menyimpan materi:", err);
+                showNotification(`❌ Gagal simpan materi: ${err.message}`, "error");
+            } finally {
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = 'Simpan';
+            }
+        });
+
+        // Fungsi untuk menampilkan notifikasi
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            const notificationText = document.getElementById('notificationText');
+            notificationText.textContent = message;
+            
+            notification.className = `fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg transform transition-transform duration-300 z-50`;
+            
+            if (type === 'success') {
+                notification.classList.add('bg-green-500', 'text-white');
+            } else {
+                notification.classList.add('bg-red-500', 'text-white');
+            }
+            
+            notification.classList.remove('translate-x-full');
+            setTimeout(() => {
+                notification.classList.add('translate-x-full');
+            }, 3000);
+        }
+
+        // Fungsi untuk render materi
+        function renderMaterials(materials) {
+            const listEl = document.getElementById('materialsList');
+            if (!listEl) return;
+
+            const totalMaterialsEl = document.getElementById('totalMaterials');
+            if (totalMaterialsEl) {
+                totalMaterialsEl.textContent = materials.length;
+            }
+
+            if (materials.length === 0) {
+                listEl.innerHTML = '<p class="text-gray-500 col-span-full text-center">Belum ada materi yang ditambahkan.</p>';
+                return;
+            }
+
+            listEl.innerHTML = materials.map(item => `
+                <div class="bg-gray-100 p-4 rounded-lg shadow-sm flex justify-between items-center">
+                    <div>
+                        <p class="font-bold text-gray-800">${item.title}</p>
+                        <p class="text-sm text-gray-600">${item.description}</p>
+                    </div>
+                    <button class="delete-material-btn text-red-500 hover:text-red-700 p-2" data-id="${item.id}" data-filepath="${item.filePath || ''}">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        // Panggil listener materi
+        listenMaterialsRealtime(renderMaterials);
+
+        // Fungsi hapus file dari Supabase
+        async function deleteFileFromSupabase(fileName) {
+            if (!fileName) return;
+            try {
+                const { error } = await supabase.storage.from(BUCKET).remove([fileName]);
+                if (error) throw error;
+                console.log(`File ${fileName} berhasil dihapus dari Supabase.`);
+            } catch (err) {
+                console.error(`Gagal menghapus file dari Supabase: ${fileName}`, err);
+            }
+        }
+
+        // Event listener untuk hapus materi
+        document.getElementById('materialsList').addEventListener('click', async (e) => {
+            const deleteBtn = e.target.closest('.delete-material-btn');
+            if (deleteBtn) {
+                const materialId = deleteBtn.dataset.id;
+                const materialFilePath = deleteBtn.dataset.filepath;
+
+                if (confirm('Apakah Anda yakin ingin menghapus materi ini? Tindakan ini tidak bisa dibatalkan.')) {
+                    try {
+                        await deleteMaterial(materialId, materialFilePath); // Pass both id and path
+                        showNotification('✅ Materi berhasil dihapus.', 'success');
+                        // The realtime listener will auto-update the UI
+
+                        // Also delete from Supabase if path exists
+                        if (materialFilePath) {
+                           await deleteFileFromSupabase(materialFilePath);
+                        }
+                    } catch (err) {
+                        console.error('Gagal menghapus materi:', err);
+                        showNotification(`❌ Gagal menghapus materi: ${err.message}`, 'error');
+                    }
+                }
+            }
+        });
+
+        // Fungsi Logout
+        function logout() {
+            authService.logout();
+            window.location.href = "login.html";
+        }
+
+        // Expose functions to global scope if needed by inline onclick attributes
+        window.exportData = () => { console.log("Exporting data..."); };
+        window.exportSurveyData = () => { console.log("Exporting survey data..."); };
+        window.refreshStats = () => { console.log("Refreshing stats..."); };
+        window.logout = logout;
+    </script>
+</body>
+</html>

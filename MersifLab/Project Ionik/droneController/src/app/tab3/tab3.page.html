@@ -1,0 +1,26 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>
+      Apa Yang Pengen Kamu Lakukan Hari ini?
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <!-- Input untuk menambah To-Do -->
+   <ion-item class="up_part">
+    <ion-input placeholder="Ingin Tambah Hal Baru?" [(ngModel)]="newTodo"> </ion-input>
+    <ion-button class="button1" expand="full" (click)="addTodo()">Tambah</ion-button>
+   </ion-item>
+
+  <!-- List To-Do -->
+   <ion-list>
+      <ion-item *ngFor="let todo of todos; let i = index">
+        <ion-label class="label" [class.completed]="todo.completed">{{ todo.text }}</ion-label>
+        <ion-checkbox slot="start" [(ngModel)]="todo.completed"></ion-checkbox>
+        <ion-button color="danger" (click)="deleteTodo(i)" fill="clear">
+          <ion-icon name="trash" slot="icon-only"></ion-icon>
+        </ion-button>
+      </ion-item>
+   </ion-list>
+</ion-content>

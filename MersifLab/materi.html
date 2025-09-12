@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Materi Pembelajaran - AI Project Planner</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .nav-button.active { color: #00a2e1; /* Mersiflab Blue */ }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-cyan-100">
+
+    <!-- Main App Container -->
+    <div id="app-container" class="pb-24">
+        <!-- Materi Header -->
+        <div class="bg-gradient-to-r from-cyan-500 via-blue-500 to-indigo-600 text-white p-6 rounded-b-3xl shadow-xl">
+            <h1 class="text-2xl font-bold mb-2">Materi Pembelajaran</h1>
+            <p class="text-cyan-100 text-sm">Koleksi materi kurikulum dan metode pembelajaran</p>
+        </div>
+        
+        <div class="p-6 space-y-6">
+            <!-- Search -->
+            <div class="relative">
+                <input type="text" id="search-input" placeholder="Cari materi pembelajaran..." class="w-full pl-10 pr-4 py-3 bg-white rounded-2xl shadow-lg focus:outline-none focus:ring-2 focus:ring-cyan-500">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            </div>
+            
+            <!-- Featured Content -->
+            <div class="bg-gradient-to-r from-cyan-100 to-blue-100 rounded-2xl p-6 shadow-lg">
+                <h3 class="text-lg font-bold text-cyan-800 mb-3">⭐ Materi Unggulan</h3>
+                <div class="bg-white rounded-xl p-4">
+                    <h4 class="font-semibold text-gray-800 mb-2">Panduan Kurikulum Merdeka SCAMPER</h4>
+                    <p class="text-gray-600 text-sm mb-3">Pelajari metode SCAMPER untuk pembelajaran berbasis proyek sesuai Kurikulum Merdeka.</p>
+                    <button class="w-full bg-gradient-to-r from-cyan-500 to-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium">Mulai Belajar</button>
+                </div>
+            </div>
+            
+            <!-- Materi List -->
+            <div id="materi-list-container" class="space-y-4">
+                <h3 class="text-lg font-bold text-gray-800">📚 Semua Materi Pembelajaran</h3>
+                <div id="materi-list" class="space-y-4">
+                    <!-- Dynamic content will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <div id="bottom-nav" class="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-sm border-t border-gray-200 p-4 z-50">
+        <div class="flex justify-around items-center max-w-lg mx-auto">
+            <a href="index.html" data-page="home" class="nav-button flex flex-col items-center space-y-1 text-gray-500">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+                <span class="text-xs font-medium">Beranda</span>
+            </a>
+            <a href="chat.html" data-page="chat" class="nav-button flex flex-col items-center space-y-1 text-gray-500">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                <span class="text-xs font-medium">Chat</span>
+            </a>
+            <a href="forum.html" data-page="forum" class="nav-button flex flex-col items-center space-y-1 text-gray-500">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                <span class="text-xs font-medium">Forum</span>
+            </a>
+            <a href="materi.html" data-page="materi" class="nav-button flex flex-col items-center space-y-1 text-gray-500 active">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                <span class="text-xs font-medium">Materi</span>
+            </a>
+            <a href="profil.html" data-page="profile" class="nav-button flex flex-col items-center space-y-1 text-gray-500">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                <span class="text-xs font-medium">Profil</span>
+            </a>
+        </div>
+    </div>
+    
+    <script type="module" src="firebase-init.js"></script>
+    <script type="module">
+        import { listenMaterialsRealtime } from './materials-service.js';
+
+        const listEl = document.getElementById('materi-list');
+
+        function createCard(item) {
+            const downloadUrl = item.fileUrl || item.linkUrl;
+            const hasDownload = !!downloadUrl;
+            
+            const isYouTubeVideo = item.linkUrl && (item.linkUrl.includes('youtube.com') || item.linkUrl.includes('youtu.be'));
+            const isUploadedVideo = item.linkUrl && ['.mp4', '.webm', '.ogg', '.mov', '.avi'].some(ext => item.linkUrl.toLowerCase().endsWith(ext));
+
+            let videoPreview = '';
+            if (isYouTubeVideo) {
+                let videoId = '';
+                try {
+                    const url = new URL(item.linkUrl);
+                    if (url.hostname === 'youtu.be') {
+                        videoId = url.pathname.slice(1);
+                    } else if (url.hostname === 'www.youtube.com' || url.hostname === 'youtube.com') {
+                        videoId = url.searchParams.get('v');
+                    }
+                } catch (e) {
+                    console.error('Invalid video URL:', item.linkUrl);
+                }
+
+                if (videoId) {
+                    videoPreview = `
+                        <div class="mt-4">
+                            <iframe 
+                                width="100%" 
+                                height="200" 
+                                src="https://www.youtube.com/embed/${videoId}" 
+                                title="YouTube video player" 
+                                frameborder="0" 
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                                allowfullscreen
+                                class="rounded-lg"
+                                style="border: 3px solid #00a2e1;"
+                            ></iframe>
+                        </div>
+                    `;
+                }
+            } else if (isUploadedVideo) {
+                const fileExtension = item.linkUrl.split('.').pop().toLowerCase();
+                const videoType = `video/${fileExtension}`;
+                videoPreview = `
+                    <div class="mt-4">
+                        <video 
+                            width="100%" 
+                            height="200" 
+                            controls 
+                            class="rounded-lg"
+                            style="border: 3px solid #00a2e1;"
+                        >
+                            <source src="${item.linkUrl}" type="${videoType}">
+                            Your browser does not support the video tag.
+                        </video>
+                    </div>
+                `;
+            }
+
+            return `
+                <div class="bg-white rounded-2xl p-5 shadow-lg transition-transform hover:scale-[1.02]">
+                    <div class="flex items-start space-x-4">
+                        <div class="w-12 h-12 bg-gradient-to-r from-blue-400 to-cyan-500 rounded-xl flex items-center justify-center text-white flex-shrink-0">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                        </div>
+                        <div class="flex-grow">
+                            <h4 class="font-semibold text-gray-800 mb-1">${item.title || 'Tanpa Judul'}</h4>
+                            <p class="text-gray-600 text-sm mb-3">${item.description || 'Tidak ada deskripsi.'}</p>
+                            ${hasDownload && !isYouTubeVideo && !isUploadedVideo ?
+                                `<a href="${downloadUrl}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center w-full sm:w-auto bg-gradient-to-r from-cyan-500 to-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:from-cyan-600 hover:to-blue-700 transition-all duration-200 shadow-md hover:shadow-lg">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                    Download Materi
+                                </a>` :
+                                ''
+                            }
+                             ${!hasDownload ? '<p class="text-sm text-gray-400">Tidak ada file untuk diunduh.</p>' : ''}
+                        </div>
+                    </div>
+                    ${videoPreview}
+                </div>
+            `;
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            listenMaterialsRealtime((items) => {
+                if (items && items.length > 0) {
+                    listEl.innerHTML = items.map(createCard).join('');
+                } else {
+                    listEl.innerHTML = '<p class="text-center text-gray-500">Belum ada materi yang tersedia.</p>';
+                }
+            });
+
+            const searchInput = document.getElementById('search-input');
+            searchInput.addEventListener('input', (e) => {
+                const searchTerm = e.target.value.toLowerCase();
+                const allCards = listEl.querySelectorAll('.bg-white');
+                allCards.forEach(card => {
+                    const title = card.querySelector('h4').textContent.toLowerCase();
+                    const description = card.querySelector('p').textContent.toLowerCase();
+                    if (title.includes(searchTerm) || description.includes(searchTerm)) {
+                        card.style.display = '';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

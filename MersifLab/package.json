@@ -1,0 +1,39 @@
+{
+  "name": "mersiflab",
+  "version": "1.0.0",
+  "description": "Platform pembelajaran teknologi dan inovasi dengan AI Gemini",
+  "main": "index.html",
+  "scripts": {
+    "start": "live-server",
+    "build": "echo 'No build step required for static site'",
+    "deploy": "firebase deploy",
+    "test": "echo 'No tests specified'"
+  },
+  "keywords": [
+    "technology",
+    "ai",
+    "iot",
+    "vr",
+    "stem",
+    "gemini",
+    "lms",
+    "innovation"
+  ],
+  "author": "Mersiflab Team",
+  "license": "MIT",
+  "devDependencies": {
+    "live-server": "^1.2.2"
+  },
+  "dependencies": {},
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/mersiflab.git"
+  },
+  "bugs": {
+    "url": "https://github.com/your-username/mersiflab/issues"
+  },
+  "homepage": "https://mersiflab.web.app"
+}
