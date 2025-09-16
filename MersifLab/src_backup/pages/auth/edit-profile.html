@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Profil - Mersiflab</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .nav-button.active { color: #00a2e1; }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-cyan-100">
+
+    <!-- Main App Container -->
+    <div id="app-container" class="pb-24">
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-cyan-500 via-blue-500 to-indigo-600 text-white p-6 rounded-b-3xl shadow-xl">
+            <div class="flex items-center space-x-4">
+                <a href="profil.html" class="p-2 bg-white/20 rounded-full">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5m7-7l-7 7 7 7"/></svg>
+                </a>
+                <div class="flex-1">
+                    <h1 class="text-xl font-bold">Edit Profil</h1>
+                    <p class="text-cyan-200 text-sm">Ubah informasi profil Anda</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="p-6 space-y-6">
+            <!-- Profile Photo Section -->
+            <div class="bg-white rounded-2xl p-6 shadow-lg">
+                <h3 class="text-lg font-bold text-gray-800 mb-6">Foto Profil</h3>
+                
+                <div class="flex items-center space-x-6">
+                    <div id="current-avatar" class="w-20 h-20 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-full flex items-center justify-center text-white text-2xl font-bold">
+                        👤
+                    </div>
+                    <div class="flex-1">
+                        <input type="file" id="photo-upload" accept="image/*" class="hidden">
+                        <button onclick="document.getElementById('photo-upload').click()" class="bg-cyan-500 text-white px-4 py-2 rounded-lg hover:bg-cyan-600 transition-colors">
+                            Pilih Foto
+                        </button>
+                        <p class="text-sm text-gray-500 mt-2">Format: JPG, PNG. Maksimal 2MB</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profile Form -->
+            <div class="bg-white rounded-2xl p-6 shadow-lg">
+                <h3 class="text-lg font-bold text-gray-800 mb-6">Informasi Pribadi</h3>
+                
+                <form id="profile-form" class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Nama Depan</label>
+                            <input type="text" id="firstName" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500" placeholder="Masukkan nama depan">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Nama Belakang</label>
+                            <input type="text" id="lastName" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500" placeholder="Masukkan nama belakang">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                        <input type="email" id="email" class="w-full px-4 py-3 border border-gray-300 rounded-xl bg-gray-100 cursor-not-allowed" placeholder="Email tidak dapat diubah" readonly>
+                        <p class="text-xs text-gray-500 mt-1">Email tidak dapat diubah karena digunakan untuk login</p>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Jenis Kelamin</label>
+                        <select id="gender" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500">
+                            <option value="">Pilih jenis kelamin</option>
+                            <option value="Laki-laki">Laki-laki</option>
+                            <option value="Perempuan">Perempuan</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Usia</label>
+                        <input type="number" id="age" min="18" max="100" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500" placeholder="Masukkan usia">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Profesi</label>
+                        <select id="profession" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500">
+                            <option value="">Pilih profesi</option>
+                            <option value="Developer">Developer</option>
+                            <option value="Engineer">Engineer</option>
+                            <option value="Researcher">Researcher</option>
+                            <option value="Student">Student</option>
+                            <option value="Data Scientist">Data Scientist</option>
+                            <option value="Tech Lead">Tech Lead</option>
+                            <option value="Lainnya">Lainnya</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Institusi/Perusahaan</label>
+                        <input type="text" id="institution" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500" placeholder="Nama institusi/perusahaan (opsional)">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Bio</label>
+                        <textarea id="bio" rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500" placeholder="Ceritakan sedikit tentang diri Anda (opsional)"></textarea>
+                    </div>
+
+                    <div class="flex space-x-4 pt-4">
+                        <button type="submit" class="flex-1 bg-gradient-to-r from-cyan-500 to-blue-600 text-white py-3 px-4 rounded-xl font-medium hover:shadow-lg transition-all duration-300">
+                            Simpan Perubahan
+                        </button>
+                        <a href="profil.html" class="flex-1 bg-gray-200 text-gray-700 py-3 px-4 rounded-xl font-medium text-center hover:bg-gray-300 transition-colors">
+                            Batal
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { auth, db } from './firebase-init.js';
+        import { getDoc, doc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Wait for auth to be ready
+            auth.onAuthStateChanged(async (user) => {
+                if (user) {
+                    await loadUserProfile();
+                    setupPhotoUpload();
+                    setupFormSubmission();
+                } else {
+                    window.location.href = 'login.html';
+                }
+            });
+        });
+
+        async function loadUserProfile() {
+            try {
+                const user = auth.currentUser;
+                if (!user) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+                
+                const userDoc = await getDoc(doc(db, "users", user.uid));
+                if (userDoc.exists()) {
+                    const userData = userDoc.data();
+                    
+                    // Populate form fields
+                    document.getElementById('firstName').value = userData.firstName || '';
+                    document.getElementById('lastName').value = userData.lastName || '';
+                    document.getElementById('email').value = user.email || '';
+                    document.getElementById('gender').value = userData.gender || '';
+                    document.getElementById('age').value = userData.age || '';
+                    document.getElementById('profession').value = userData.profession || '';
+                    document.getElementById('institution').value = userData.institution || '';
+                    document.getElementById('bio').value = userData.bio || '';
+
+                    // Update avatar
+                    const avatar = document.getElementById('current-avatar');
+                    if (userData.photoURL || user.photoURL) {
+                        avatar.innerHTML = `<img src="${userData.photoURL || user.photoURL}" alt="Profile" class="w-full h-full rounded-full object-cover">`;
+                    } else if (userData.firstName && userData.lastName) {
+                        const initials = (userData.firstName[0] + userData.lastName[0]).toUpperCase();
+                        avatar.textContent = initials;
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading user profile:', error);
+                showNotification('Gagal memuat data profil', 'error');
+            }
+        }
+
+        function setupPhotoUpload() {
+            document.getElementById('photo-upload').addEventListener('change', async (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                // Validate file size (2MB max)
+                if (file.size > 2 * 1024 * 1024) {
+                    showNotification('Ukuran file terlalu besar. Maksimal 2MB', 'error');
+                    return;
+                }
+
+                // Validate file type
+                if (!file.type.startsWith('image/')) {
+                    showNotification('File harus berupa gambar', 'error');
+                    return;
+                }
+
+                try {
+                    // Show preview
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const avatar = document.getElementById('current-avatar');
+                        avatar.innerHTML = `<img src="${e.target.result}" alt="Profile" class="w-full h-full rounded-full object-cover">`;
+                    };
+                    reader.readAsDataURL(file);
+
+                    // TODO: Upload to storage service (Supabase/Firebase Storage)
+                    showNotification('Foto berhasil dipilih. Akan disimpan saat Anda menyimpan profil.', 'success');
+                } catch (error) {
+                    console.error('Error handling photo upload:', error);
+                    showNotification('Gagal memproses foto', 'error');
+                }
+            });
+        }
+
+        function setupFormSubmission() {
+            document.getElementById('profile-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                try {
+                    const user = auth.currentUser;
+                    if (!user) return;
+
+                    const formData = {
+                        firstName: document.getElementById('firstName').value.trim(),
+                        lastName: document.getElementById('lastName').value.trim(),
+                        gender: document.getElementById('gender').value,
+                        age: parseInt(document.getElementById('age').value) || null,
+                        profession: document.getElementById('profession').value,
+                        institution: document.getElementById('institution').value.trim(),
+                        bio: document.getElementById('bio').value.trim(),
+                        updatedAt: new Date().toISOString()
+                    };
+
+                    // Update displayName
+                    if (formData.firstName && formData.lastName) {
+                        formData.displayName = `${formData.firstName} ${formData.lastName}`;
+                    }
+
+                    // Save to Firestore
+                    await updateDoc(doc(db, "users", user.uid), formData);
+                    
+                    showNotification('Profil berhasil diperbarui!', 'success');
+                    
+                    // Redirect back to profile page after 1.5 seconds
+                    setTimeout(() => {
+                        window.location.href = 'profil.html';
+                    }, 1500);
+
+                } catch (error) {
+                    console.error('Error updating profile:', error);
+                    showNotification('Gagal memperbarui profil. Silakan coba lagi.', 'error');
+                }
+            });
+        }
+
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            const bgColor = type === 'success' ? 'bg-green-500' : type === 'error' ? 'bg-red-500' : 'bg-blue-500';
+            notification.className = `fixed top-20 right-4 z-50 px-6 py-3 ${bgColor} text-white rounded-lg shadow-lg`;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            setTimeout(() => notification.remove(), 4000);
+        }
+    </script>
+</body>
+</html>

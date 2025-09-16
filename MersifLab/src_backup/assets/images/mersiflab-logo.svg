@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 80">
+  <!-- Background -->
+  <rect width="200" height="80" fill="white"/>
+  
+  <!-- Blue elements -->
+  <rect x="15" y="15" width="25" height="15" rx="3" fill="#00a2e1"/>
+  <rect x="15" y="35" width="35" height="15" rx="3" fill="#00a2e1"/>
+  <rect x="15" y="55" width="20" height="10" rx="2" fill="#00a2e1"/>
+  
+  <!-- Mersif text -->
+  <text x="60" y="35" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#00a2e1">Mersif</text>
+  
+  <!-- Lab text -->
+  <text x="15" y="75" font-family="Arial, sans-serif" font-size="20" font-weight="bold" fill="#333">Lab</text>
+</svg>

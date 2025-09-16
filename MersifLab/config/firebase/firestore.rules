@@ -1,0 +1,46 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Allow read/write access to posts for authenticated users
+    match /posts/{postId} {
+      // Allow read access to all users
+      allow read: if true;
+      
+      // Allow create access to authenticated users
+      allow create: if request.auth != null 
+        && request.auth.uid == resource.data.authorId;
+      
+      // Allow update access to authenticated users for likes and comments
+      allow update: if request.auth != null 
+        && (
+          // Allow author to update their own posts
+          request.auth.uid == resource.data.authorId
+          // Allow any authenticated user to add comments or likes
+          || (request.auth != null && 
+              (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['comments', 'likes']))
+             )
+        );
+      
+      // Allow delete access to post author only
+      allow delete: if request.auth != null 
+        && request.auth.uid == resource.data.authorId;
+    }
+    
+    // Allow read/write access to user profiles for authenticated users
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Allow read/write access to materials for authenticated users
+    match /materials/{materialId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null;
+    }
+    
+    // Allow read/write access to courses for authenticated users
+    match /courses/{courseId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null;
+    }
+  }
+}

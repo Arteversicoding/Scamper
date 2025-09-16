@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Setup - AI Project Planner</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50 min-h-screen flex items-center justify-center p-4">
+    <div class="w-full max-w-2xl bg-white rounded-xl shadow-lg p-8">
+        <div class="text-center mb-8">
+            <i class="fas fa-cog text-4xl text-cyan-600 mb-4"></i>
+            <h1 class="text-3xl font-bold text-gray-800 mb-2">Admin Setup</h1>
+            <p class="text-gray-600">Inisialisasi akun administrator Firebase</p>
+        </div>
+
+        <div class="space-y-6">
+            <!-- Admin Credentials Info -->
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <h3 class="font-semibold text-blue-800 mb-3">📋 Kredensial Admin yang akan dibuat:</h3>
+                <div class="space-y-2 text-sm">
+                    <div class="flex justify-between">
+                        <span class="font-medium">Email:</span>
+                        <span class="text-blue-700">admin@aiprojectplanner.com</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="font-medium">Password:</span>
+                        <span class="text-blue-700">Admin123!</span>
+                    </div>
+                    <hr class="border-blue-200">
+                    <div class="flex justify-between">
+                        <span class="font-medium">Email:</span>
+                        <span class="text-blue-700">admin@aiprojectplanner.tech</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="font-medium">Password:</span>
+                        <span class="text-blue-700">AIPlannerAdmin2024!</span>
+                    </div>
+                    <hr class="border-blue-200">
+                    <div class="flex justify-between">
+                        <span class="font-medium">Email:</span>
+                        <span class="text-blue-700">superadmin@aiprojectplanner.com</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="font-medium">Password:</span>
+                        <span class="text-blue-700">SuperAdmin123!</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Setup Actions -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <button id="createAdminsBtn" class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center">
+                    <i class="fas fa-user-plus mr-2"></i>
+                    Buat Admin Users
+                </button>
+                
+                <button id="testLoginsBtn" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center">
+                    <i class="fas fa-check-circle mr-2"></i>
+                    Test Login Admin
+                </button>
+            </div>
+
+            <!-- Console Output -->
+            <div class="bg-gray-900 text-green-400 p-4 rounded-lg font-mono text-sm h-64 overflow-y-auto" id="console">
+                <div class="text-gray-500">Console output akan muncul di sini...</div>
+            </div>
+
+            <!-- Navigation -->
+            <div class="flex justify-between pt-4 border-t">
+                <a href="index.html" class="text-gray-600 hover:text-indigo-600 transition-colors">
+                    <i class="fas fa-home mr-2"></i>Kembali ke Beranda
+                </a>
+                <a href="login.html" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors">
+                    <i class="fas fa-sign-in-alt mr-2"></i>Login Admin
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script type="module" src="../../../config/supabase/config.js"></script>
+    <script type="module" src="../../js/services/firebase-init.js"></script>
+    <script type="module" src="../../js/services/auth-service.js"></script>
+    <script type="module" src="../../../admin-setup.js"></script>
+    <script type="module">
+        import { AdminSetup } from '../../../admin-setup.js';
+
+        const consoleEl = document.getElementById('console');
+        const createBtn = document.getElementById('createAdminsBtn');
+        const testBtn = document.getElementById('testLoginsBtn');
+
+        // Override console.log to display in our console
+        const originalLog = console.log;
+        const originalError = console.error;
+        
+        function addToConsole(message, type = 'log') {
+            const timestamp = new Date().toLocaleTimeString();
+            const color = type === 'error' ? 'text-red-400' : 'text-green-400';
+            consoleEl.innerHTML += `<div class="${color}">[${timestamp}] ${message}</div>`;
+            consoleEl.scrollTop = consoleEl.scrollHeight;
+            
+            // Also log to browser console
+            if (type === 'error') {
+                originalError(message);
+            } else {
+                originalLog(message);
+            }
+        }
+
+        console.log = (message) => addToConsole(message, 'log');
+        console.error = (message) => addToConsole(message, 'error');
+
+        // Initialize admin setup
+        const adminSetup = new AdminSetup();
+
+        createBtn.addEventListener('click', async () => {
+            createBtn.disabled = true;
+            createBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Membuat...';
+            consoleEl.innerHTML = '';
+            
+            try {
+                await adminSetup.createAdminUsers();
+                createBtn.innerHTML = '<i class="fas fa-check mr-2"></i>Selesai!';
+                createBtn.className = 'bg-green-500 text-white px-6 py-3 rounded-lg cursor-not-allowed';
+            } catch (error) {
+                console.error('Setup failed: ' + error.message);
+                createBtn.innerHTML = '<i class="fas fa-exclamation-triangle mr-2"></i>Gagal';
+                createBtn.className = 'bg-red-500 text-white px-6 py-3 rounded-lg';
+                createBtn.disabled = false;
+            }
+        });
+
+        testBtn.addEventListener('click', async () => {
+            testBtn.disabled = true;
+            testBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Testing...';
+            
+            try {
+                await adminSetup.testAllAdminLogins();
+                testBtn.innerHTML = '<i class="fas fa-check mr-2"></i>Test Selesai';
+                testBtn.className = 'bg-green-500 text-white px-6 py-3 rounded-lg cursor-not-allowed';
+            } catch (error) {
+                console.error('Test failed: ' + error.message);
+                testBtn.innerHTML = '<i class="fas fa-exclamation-triangle mr-2"></i>Test Gagal';
+                testBtn.className = 'bg-red-500 text-white px-6 py-3 rounded-lg';
+                testBtn.disabled = false;
+            }
+        });
+
+        // Initial message
+        addToConsole('Admin Setup siap digunakan. Klik "Buat Admin Users" untuk memulai.');
+    </script>
+</body>
+</html>

@@ -1,0 +1,1 @@
+// Authentication checks removed - public access enabled

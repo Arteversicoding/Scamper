@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MersifLab - Test Page</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="../src/styles/main.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50 min-h-screen flex items-center justify-center">
+    <div class="text-center p-8 max-w-2xl mx-auto">
+        <h1 class="text-4xl font-bold text-indigo-600 mb-6">MersifLab</h1>
+        <p class="text-xl text-gray-700 mb-8">Selamat! Halaman test berhasil dimuat.</p>
+        
+        <div class="bg-white p-6 rounded-lg shadow-md text-left mb-8">
+            <h2 class="text-2xl font-semibold mb-4">Status Sistem</h2>
+            <div id="system-status" class="space-y-4">
+                <div class="flex items-center">
+                    <div id="supabase-status" class="w-4 h-4 rounded-full bg-yellow-400 mr-2"></div>
+                    <span>Mengecek koneksi Supabase...</span>
+                </div>
+                <div class="flex items-center">
+                    <div id="assets-status" class="w-4 h-4 rounded-full bg-yellow-400 mr-2"></div>
+                    <span>Mengecek aset statis...</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="space-x-4">
+            <a href="/" class="px-6 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition">
+                Kembali ke Beranda
+            </a>
+            <a href="/src/pages/chat/chat.html" class="px-6 py-2 border border-indigo-600 text-indigo-600 rounded-md hover:bg-indigo-50 transition">
+                Ke Halaman Chat
+            </a>
+        </div>
+    </div>
+
+    <script type="module">
+        // Test Supabase connection
+        async function testSupabase() {
+            const statusElement = document.getElementById('supabase-status');
+            try {
+                const response = await fetch('../src/js/services/supabase-service.js');
+                if (response.ok) {
+                    statusElement.classList.remove('bg-yellow-400');
+                    statusElement.classList.add('bg-green-500');
+                    statusElement.nextElementSibling.textContent = 'Koneksi Supabase berhasil';
+                } else {
+                    throw new Error('Gagal memuat supabase-service.js');
+                }
+            } catch (error) {
+                console.error('Error testing Supabase:', error);
+                statusElement.classList.remove('bg-yellow-400');
+                statusElement.classList.add('bg-red-500');
+                statusElement.nextElementSibling.textContent = 'Gagal terhubung ke Supabase';
+            }
+        }
+
+        // Test static assets
+        async function testAssets() {
+            const statusElement = document.getElementById('assets-status');
+            try {
+                const response = await fetch('../src/assets/images/logo.svg');
+                if (response.ok) {
+                    statusElement.classList.remove('bg-yellow-400');
+                    statusElement.classList.add('bg-green-500');
+                    statusElement.nextElementSibling.textContent = 'Aset statis berhasil dimuat';
+                } else {
+                    throw new Error('Gagal memuat aset statis');
+                }
+            } catch (error) {
+                console.error('Error testing assets:', error);
+                statusElement.classList.remove('bg-yellow-400');
+                statusElement.classList.add('bg-red-500');
+                statusElement.nextElementSibling.textContent = 'Gagal memuat aset statis';
+            }
+        }
+
+        // Run tests when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            testSupabase();
+            testAssets();
+        });
+    </script>
+</body>
+</html>

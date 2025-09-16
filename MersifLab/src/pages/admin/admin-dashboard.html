@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - AI Project Planner</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Load PDF.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
+    <script>
+        // Inisialisasi PDF.js worker
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.worker.min.js';
+        console.log('PDF.js versi', pdfjsLib.version, 'berhasil dimuat');
+    </script>
+
+    <style>
+        .stat-card {
+            transition: all 0.3s ease;
+        }
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center space-x-4">
+                    <a href="../../../home.html" class="text-2xl font-bold text-cyan-600">
+                        <i class="fas fa-graduation-cap mr-2"></i>AI Project Planner
+                    </a>
+                    <span class="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm font-medium">ADMIN</span>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center space-x-4">
+                    <a href="../../../home.html" class="text-gray-600 hover:text-cyan-600 transition-colors">
+                        <i class="fas fa-home mr-2"></i>Beranda
+                    </a>
+                </div>
+            </div>
+            </div>
+            </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-gray-800 mb-2">Admin Dashboard</h1>
+            <p class="text-gray-600">Overview sistem AI Project Planner untuk Pendidik</p>
+        </div>
+
+        <!-- Stats Overview -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="stat-card bg-white rounded-xl shadow-lg p-6">
+                <div class="flex items-center">
+                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-users text-blue-600 text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Total Users</p>
+                        <p class="text-2xl font-bold text-gray-900" id="totalUsers">0</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stat-card bg-white rounded-xl shadow-lg p-6">
+                <div class="flex items-center">
+                    <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-book text-green-600 text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Total RPP</p>
+                        <p class="text-2xl font-bold text-gray-900" id="totalMaterials">0</p>
+                    </div>
+                </div>
+            </div>
+
+            
+
+            <div class="stat-card bg-white rounded-xl shadow-lg p-6">
+                <div class="flex items-center">
+                    <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-comments text-purple-600 text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Sesi AI Planner</p>
+                        <p class="text-2xl font-bold text-gray-900" id="totalChats">0</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stat-card bg-white rounded-xl shadow-lg p-6">
+                <div class="flex items-center">
+                    <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-chart-bar text-orange-600 text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Feedback Guru</p>
+                        <p class="text-2xl font-bold text-gray-900" id="surveyResponses">0</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        
+
+        </div>
+
+        <!-- Materials Manager -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+            <h3 class="text-xl font-semibold text-gray-800 mb-6">Materials Manager</h3>
+
+            <!-- Upload Form -->
+            <form id="materialForm" class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end mb-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Judul</label>
+                    <input id="materialTitle" type="text" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Masukkan judul materi" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Deskripsi</label>
+                    <input id="materialDesc" type="text" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Deskripsi singkat" required>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <input id="materialFile" type="file" class="w-full text-sm">
+                    <input id="materialLink" type="url" placeholder="Atau tempelkan URL materi" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <div class="flex gap-2">
+                        <button type="submit" id="saveMaterialBtn" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50">
+Simpan
+</button>
+                    </div>
+                </div>
+            </form>
+
+            <!-- List -->
+            <div id="materialsList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="bg-white rounded-xl shadow-lg p-6">
+            <h3 class="text-xl font-semibold text-gray-800 mb-6">Quick Actions</h3>
+            
+            <div class="flex flex-wrap gap-4">
+                <!-- Tombol Unggah File PDF untuk Ekstrak Teks -->
+                <div class="relative group">
+                    <button id="extractPdfBtn" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors">
+                        <i class="fas fa-file-pdf mr-2"></i>Unggah PDF untuk AI
+                    </button>
+                    <input type="file" id="extractPdfInput" accept=".pdf" class="hidden" />
+                    <div class="absolute z-10 hidden group-hover:block w-64 bg-white p-3 rounded-lg shadow-lg mt-2 text-sm text-gray-700">
+                        Unggah file PDF untuk diekstrak teksnya dan digunakan di chat AI
+                    </div>
+                </div>
+                
+                <button onclick="exportData()" class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors">
+                    <i class="fas fa-download mr-2"></i>Export Data
+                </button>
+                <button onclick="exportSurveyData()" class="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors">
+                    <i class="fas fa-chart-line mr-2"></i>Export Survey Data
+                </button>
+                <button onclick="refreshStats()" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors">
+                    <i class="fas fa-refresh mr-2"></i>Refresh Stats
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div id="notification" class="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg transform translate-x-full transition-transform duration-300 z-50">
+        <div class="flex items-center">
+            <i class="fas fa-check-circle mr-2"></i>
+            <span id="notificationText"></span>
+        </div>
+    </div>
+
+    <!-- Load Supabase client library -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- Scripts -->
+    <script type="module">
+        // Konfigurasi Supabase - Gunakan service role key untuk bypass RLS
+        const SUPABASE_URL = "https://zlcislycukayjgjhozjy.supabase.co";
+        const SUPABASE_SERVICE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpsY2lzbHljdWtheWpnamhvemp5Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NjM5NzI1NywiZXhwIjoyMDcxOTczMjU3fQ.I9M5SkvntciF3XbWcCuj5yr7jhejHu9vbfMuhGERLGw";
+        const BUCKET = "upload";
+        
+        // Inisialisasi Supabase dengan service role
+        const { createClient } = supabase;
+        const supabaseClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY, {
+            auth: {
+                autoRefreshToken: false,
+                persistSession: false
+            }
+        });
+        
+        // Buat supabase tersedia secara global
+        window.supabase = supabaseClient;
+
+        // Inisialisasi aplikasi
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('Aplikasi diinisialisasi');
+            initializePdfUpload();
+        });
+
+
+        // Fungsi untuk menangani unggahan file
+        async function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            try {
+                // Upload file ke Supabase Storage
+                const fileExt = file.name.split('.').pop();
+                const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
+                
+                const { data, error } = await supabaseClient.storage
+                    .from(BUCKET)
+                    .upload(`uploads/${fileName}`, file);
+
+                if (error) throw error;
+                
+                // Dapatkan URL publik
+                const { data: { publicUrl } } = supabaseClient.storage
+                    .from(BUCKET)
+                    .getPublicUrl(`uploads/${fileName}`);
+
+                console.log('File berhasil diunggah:', publicUrl);
+                return publicUrl;
+            } catch (error) {
+                console.error('Gagal mengunggah file:', error);
+                throw error;
+            }
+        }
+
+        
+        // Inisialisasi aplikasi saat DOM siap
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('Aplikasi siap digunakan');
+            
+            // Inisialisasi upload PDF
+            const pdfUpload = document.getElementById('pdf-upload');
+            if (pdfUpload) {
+                pdfUpload.addEventListener('change', handlePdfUpload);
+                console.log('PDF upload diaktifkan');
+            }
+        });
+
+        // Fungsi untuk mengekstrak teks dari PDF
+        async function extractTextFromPDF(file) {
+            return new Promise(async (resolve, reject) => {
+                try {
+                    console.log('Memulai ekstraksi teks dari PDF...');
+                    
+                    console.log('Versi PDF.js:', pdfjsLib.version);
+                    console.log('Membaca file...');
+                    
+                    // Baca file sebagai ArrayBuffer
+                    const arrayBuffer = await file.arrayBuffer();
+                    
+                    console.log('Memuat dokumen PDF...');
+                    const loadingTask = pdfjsLib.getDocument(arrayBuffer);
+                    const pdf = await loadingTask.promise;
+                    
+                    let textContent = '';
+                    console.log(`Jumlah halaman: ${pdf.numPages}`);
+                    
+                    // Ekstrak teks dari setiap halaman (maksimal 50 halaman pertama)
+                    const maxPages = Math.min(pdf.numPages, 50);
+                    for (let i = 1; i <= maxPages; i++) {
+                        console.log(`Memproses halaman ${i}...`);
+                        const page = await pdf.getPage(i);
+                        const textContentObj = await page.getTextContent();
+                        const pageText = textContentObj.items
+                            .map(item => item.str || '')
+                            .join(' ')
+                            .replace(/\s+/g, ' ')
+                            .trim();
+                            
+                        textContent += pageText + '\n\n';
+                        console.log(`Halaman ${i} dari ${maxPages} selesai diproses`);
+                    }
+                    
+                    if (textContent.trim() === '') {
+                        throw new Error('Tidak ada teks yang dapat diekstrak dari dokumen ini. Pastikan dokumen berisi teks yang dapat dibaca.');
+                    }
+                    
+                    // Simpan ke Supabase
+                    try {
+                        // Simpan ke Supabase tanpa autentikasi
+                        const { data: document, error } = await supabaseClient
+                            .from('documents')
+                            .insert([
+                                {
+                                    file_name: file.name,
+                                    text_content: textContent,
+                                    page_count: pdf.numPages,
+                                    processed_at: new Date().toISOString()
+                                }
+                            ])
+                            .select()
+                            .single();
+                            
+                        if (error) {
+                            console.error('Error menyimpan dokumen:', error);
+                            throw error;
+                        }
+                        
+                        // Simpan referensi ke sessionStorage
+                        const pdfData = {
+                            id: document.id,
+                            fileName: file.name,
+                            text: textContent,
+                            pageCount: pdf.numPages,
+                            processedAt: new Date().toISOString()
+                        };
+                        
+                        sessionStorage.setItem('pdfContext', JSON.stringify(pdfData));
+                        
+                        console.log('Ekstraksi teks selesai dan disimpan ke Supabase. Total halaman:', pdf.numPages);
+                        resolve(textContent);
+                        
+                    } catch (error) {
+                        console.error('Gagal menyimpan ke Supabase:', error);
+                        
+                        // Simpan ke localStorage sebagai fallback
+                        const fallbackData = {
+                            fileName: file.name,
+                            text: textContent,
+                            pageCount: pdf.numPages,
+                            processedAt: new Date().toISOString(),
+                            error: 'Gagal menyimpan ke server'
+                        };
+                        
+                        localStorage.setItem(`pdf_${Date.now()}`, JSON.stringify(fallbackData));
+                        sessionStorage.setItem('pdfContext', JSON.stringify(fallbackData));
+                        
+                        console.log('Dokumen disimpan sementara di browser');
+                        resolve(textContent);
+                        
+                        // Error handling sudah ditangani di atas
+                    }
+                } catch (error) {
+                    console.error('Error saat mengekstrak teks PDF:', error);
+                    reject(error);
+                }
+            });
+        }
+
+        // Fungsi untuk menangani perubahan file PDF
+        async function handlePdfUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            if (file.type !== 'application/pdf') {
+                showNotification('Hanya file PDF yang didukung untuk ekstraksi teks', 'error');
+                return;
+            }
+            
+            try {
+                showNotification('Sedang mengekstrak teks dari PDF...', 'info');
+                await extractTextFromPDF(file);
+                showNotification('Teks berhasil diekstrak dan siap digunakan di chat AI', 'success');
+            } catch (error) {
+                console.error('Gagal mengekstrak teks PDF:', error);
+                showNotification('Gagal mengekstrak teks: ' + error.message, 'error');
+            }
+        }
+
+        // Fungsi untuk menangani klik tombol unggah PDF
+        function handlePdfButtonClick() {
+            const extractPdfInput = document.getElementById('extractPdfInput');
+            if (extractPdfInput) {
+                extractPdfInput.click();
+            }
+        }
+        
+        // Inisialisasi event listener untuk upload dan ekstrak PDF
+        function initializePdfUpload() {
+            const extractPdfBtn = document.getElementById('extractPdfBtn');
+            const extractPdfInput = document.getElementById('extractPdfInput');
+            const pdfUpload = document.getElementById('pdf-upload');
+            
+            // Initialize PDF upload input
+            if (pdfUpload) {
+                pdfUpload.addEventListener('change', handlePdfUpload);
+                console.log('PDF upload input diinisialisasi');
+            }
+            
+            // Initialize extract PDF button and input
+            if (extractPdfBtn && extractPdfInput) {
+                // Remove existing event listeners to avoid duplicates
+                extractPdfBtn.removeEventListener('click', handlePdfButtonClick);
+                extractPdfInput.removeEventListener('change', handlePdfUpload);
+                
+                // Add new event listeners
+                extractPdfBtn.addEventListener('click', handlePdfButtonClick);
+                extractPdfInput.addEventListener('change', handlePdfUpload);
+                
+                console.log('Tombol ekstrak PDF diinisialisasi');
+            } else {
+                console.error('Elemen ekstrak PDF tidak ditemukan');
+            }
+        }
+
+        // Panggil inisialisasi saat DOM selesai dimuat
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializePdfUpload);
+        } else {
+            initializePdfUpload();
+        }
+
+        // Fungsi untuk upload file ke Supabase Storage
+        async function uploadFileToSupabase(file, title, description) {
+            try {
+                const fileExt = file.name.split('.').pop();
+                
+                // Periksa apakah file adalah PDF
+                const isPDF = file.type === 'application/pdf';
+                
+                // Jika file adalah PDF, ekstrak teksnya
+                if (isPDF) {
+                    try {
+                        console.log('File PDF terdeteksi, memulai ekstraksi teks...');
+                        await extractTextFromPDF(file);
+                        console.log('Ekstraksi teks PDF selesai.');
+                    } catch (extractError) {
+                        console.error('Gagal mengekstrak teks dari PDF:', extractError);
+                        // Lanjutkan proses upload meskipun ekstraksi gagal
+                    }
+                }
+                
+                const sanitize = (str) => str.toLowerCase()
+                    .replace(/\s+/g, '-') 
+                    .replace(/[^\w\-]+/g, '') 
+                    .replace(/\-\-+/g, '-') 
+                    .replace(/^-+/, '') 
+                    .replace(/-+$/, '');
+
+                const baseName = `${sanitize(title)}-${sanitize(description)}`;
+                const fileName = `${baseName.substring(0, 100)}_${Date.now()}.${fileExt}`;
+
+                // Tampilkan notifikasi upload
+                showNotification(`Mengunggah ${isPDF ? 'PDF' : 'file'}...`, 'info');
+                
+                const { data, error } = await supabaseClient.storage
+                    .from(BUCKET)
+                    .upload(fileName, file);
+
+                if (error) {
+                    throw error;
+                }
+
+                const { data: { publicUrl } } = supabaseClient.storage
+                    .from(BUCKET)
+                    .getPublicUrl(fileName);
+
+                if (!publicUrl) {
+                    throw new Error('Gagal mendapatkan URL publik untuk file yang diunggah.');
+                }
+                
+                // Tampilkan notifikasi sukses
+                showNotification(`${isPDF ? 'PDF' : 'File'} berhasil diunggah${isPDF ? ' dan teks telah diekstrak' : ''}`, 'success');
+                
+                return {
+                    success: true,
+                    fileName: fileName,
+                    publicUrl: publicUrl,
+                    fullData: data,
+                    isPDF: isPDF
+                };
+            } catch (error) {
+                console.error('Upload error:', error);
+                showNotification(`Gagal mengunggah file: ${error.message}`, 'error');
+                throw error;
+            }
+        }
+
+        // Handler untuk form simpan materi
+        document.getElementById("materialForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const saveBtn = document.getElementById("saveMaterialBtn");
+            const title = document.getElementById("materialTitle").value.trim();
+            const description = document.getElementById("materialDesc").value.trim();
+            const fileInput = document.getElementById("materialFile");
+            const file = fileInput.files[0];
+            const linkUrl = document.getElementById("materialLink").value.trim();
+
+            saveBtn.disabled = true;
+            saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Menyimpan...';
+
+            if (!title || !description) {
+                showNotification("❌ Judul & Deskripsi wajib diisi!", "error");
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = 'Simpan';
+                return;
+            }
+
+            if (!file && !linkUrl) {
+                showNotification("❌ Pilih file ATAU masukkan link!", "error");
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = 'Simpan';
+                return;
+            }
+
+            try {
+                let finalLink = linkUrl;
+                let uploadResult = null;
+                if (file) {
+                    uploadResult = await uploadFileToSupabase(file, title, description);
+                    finalLink = uploadResult.publicUrl;
+                }
+
+                await createMaterial({ 
+                    title, 
+                    description, 
+                    linkUrl: finalLink, 
+                    filePath: file ? uploadResult.fileName : '' 
+                });
+                showNotification("✅ Materi berhasil disimpan!", "success");
+                document.getElementById("materialForm").reset();
+
+            } catch (err) {
+                console.error("Gagal menyimpan materi:", err);
+                showNotification(`❌ Gagal simpan materi: ${err.message}`, "error");
+            } finally {
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = 'Simpan';
+            }
+        });
+
+        // Fungsi untuk menampilkan notifikasi
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            const notificationText = document.getElementById('notificationText');
+            
+            if (!notification || !notificationText) {
+                console.log(`[${type.toUpperCase()}] ${message}`);
+                return;
+            }
+            
+            notificationText.textContent = message;
+            
+            // Reset classes
+            notification.className = 'fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg transform transition-transform duration-300 z-50';
+            
+            // Add type-specific classes
+            switch (type) {
+                case 'success':
+                    notification.classList.add('bg-green-500', 'text-white');
+                    break;
+                case 'error':
+                    notification.classList.add('bg-red-500', 'text-white');
+                    break;
+                case 'info':
+                    notification.classList.add('bg-blue-500', 'text-white');
+                    break;
+                case 'warning':
+                    notification.classList.add('bg-yellow-500', 'text-white');
+                    break;
+                default:
+                    notification.classList.add('bg-gray-500', 'text-white');
+            }
+            
+            // Show notification
+            notification.classList.remove('translate-x-full', 'opacity-0');
+            notification.classList.add('opacity-100');
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                notification.classList.add('opacity-0');
+                setTimeout(() => {
+                    notification.classList.add('translate-x-full');
+                }, 300);
+            }, 5000);
+        }
+
+        // Fungsi untuk render materi
+        function renderMaterials(materials) {
+            const listEl = document.getElementById('materialsList');
+            if (!listEl) return;
+
+            const totalMaterialsEl = document.getElementById('totalMaterials');
+            if (totalMaterialsEl) {
+                totalMaterialsEl.textContent = materials.length;
+            }
+
+            if (materials.length === 0) {
+                listEl.innerHTML = '<p class="text-gray-500 col-span-full text-center">Belum ada materi yang ditambahkan.</p>';
+                return;
+            }
+
+            listEl.innerHTML = materials.map(item => `
+                <div class="bg-gray-100 p-4 rounded-lg shadow-sm flex justify-between items-center">
+                    <div>
+                        <p class="font-bold text-gray-800">${item.title}</p>
+                        <p class="text-sm text-gray-600">${item.description}</p>
+                    </div>
+                    <button class="delete-material-btn text-red-500 hover:text-red-700 p-2" data-id="${item.id}" data-filepath="${item.filePath || ''}">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        // Panggil listener materi
+        listenMaterialsRealtime(renderMaterials);
+
+        // Fungsi hapus file dari Supabase
+        async function deleteFileFromSupabase(fileName) {
+            if (!fileName) return;
+            try {
+                const { error } = await supabaseClient.storage.from(BUCKET).remove([fileName]);
+                if (error) throw error;
+                console.log(`File ${fileName} berhasil dihapus dari Supabase.`);
+            } catch (err) {
+                console.error(`Gagal menghapus file dari Supabase: ${fileName}`, err);
+            }
+        }
+
+        // Event listener untuk hapus materi
+        document.getElementById('materialsList').addEventListener('click', async (e) => {
+            const deleteBtn = e.target.closest('.delete-material-btn');
+            if (deleteBtn) {
+                const materialId = deleteBtn.dataset.id;
+                const materialFilePath = deleteBtn.dataset.filepath;
+
+                if (confirm('Apakah Anda yakin ingin menghapus materi ini? Tindakan ini tidak bisa dibatalkan.')) {
+                    try {
+                        await deleteMaterial(materialId, materialFilePath); // Pass both id and path
+                        showNotification('✅ Materi berhasil dihapus.', 'success');
+                        // The realtime listener will auto-update the UI
+
+                        // Also delete from Supabase if path exists
+                        if (materialFilePath) {
+                           await deleteFileFromSupabase(materialFilePath);
+                        }
+                    } catch (err) {
+                        console.error('Gagal menghapus materi:', err);
+                        showNotification(`❌ Gagal menghapus materi: ${err.message}`, 'error');
+                    }
+                }
+            }
+        });
+
+        // Fungsi Logout
+        function logout() {
+            authService.logout();
+            window.location.href = "/public/auth/login.html";
+        }
+
+        // Expose functions to global scope if needed by inline onclick attributes
+        window.exportData = () => { console.log("Exporting data..."); };
+        window.exportSurveyData = () => { console.log("Exporting survey data..."); };
+        window.refreshStats = () => { console.log("Refreshing stats..."); };
+        window.logout = logout;
+    </script>
+</body>
+</html>

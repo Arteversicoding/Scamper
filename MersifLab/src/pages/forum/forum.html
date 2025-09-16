@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forum Guru - AI Project Planner</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .nav-button.active { color: #00a2e1; /* Mersiflab Blue */ }
+        .no-scrollbar { scrollbar-width: none; /* Firefox */ }
+        .no-scrollbar::-webkit-scrollbar { display: none; /* Safari and Chrome */ }
+    </style>
+    <script type="module" src="../../js/components/auth/auth-guard.js"></script>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-cyan-100">
+
+    <!-- Main App Container -->
+    <div id="app-container" class="pb-24">
+        <!-- Forum Header -->
+        <div class="bg-gradient-to-r from-cyan-500 via-blue-500 to-indigo-600 text-white p-6 rounded-b-3xl shadow-xl">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-2xl font-bold mb-1">Forum Guru</h1>
+                    <p class="text-cyan-100 text-sm">Diskusi pembelajaran dan kurikulum bersama sesama guru</p>
+                </div>
+                <button id="new-post-button" class="bg-white/20 hover:bg-white/30 p-3 rounded-full transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14m-7-7h14"/></svg>
+                </button>
+            </div>
+        </div>
+        
+        <div class="p-6 space-y-6">
+            <!-- Search & Filter -->
+            <div class="bg-white rounded-2xl p-4 shadow-lg">
+                <div class="relative mb-4">
+                    <input type="text" id="search-input" placeholder="Cari topik pembelajaran..." class="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                </div>
+                <div class="flex space-x-2 overflow-x-auto no-scrollbar">
+                    <button class="bg-cyan-500 text-white px-4 py-2 rounded-full text-sm whitespace-nowrap">Semua</button>
+                    <button class="bg-gray-100 text-gray-600 px-4 py-2 rounded-full text-sm whitespace-nowrap">SCAMPER</button>
+                    <button class="bg-gray-100 text-gray-600 px-4 py-2 rounded-full text-sm whitespace-nowrap">RPP</button>
+                    <button class="bg-gray-100 text-gray-600 px-4 py-2 rounded-full text-sm whitespace-nowrap">Asesmen</button>
+                    <button class="bg-gray-100 text-gray-600 px-4 py-2 rounded-full text-sm whitespace-nowrap">Kurikulum</button>
+                </div>
+            </div>
+            
+            <!-- Forum Threads -->
+            <div id="forum-threads" class="space-y-4">
+                <!-- Thread 1 -->
+                <div class="bg-white rounded-2xl p-5 shadow-lg">
+                    <div class="flex items-start space-x-4">
+                        <div class="w-12 h-12 bg-gradient-to-r from-blue-400 to-cyan-500 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0">BR</div>
+                        <div class="flex-1">
+                            <div class="flex items-center justify-between mb-2">
+                                <h4 class="font-bold text-gray-800">Bu Rina</h4>
+                                <span class="text-gray-400 text-xs">2 jam lalu</span>
+                            </div>
+                            <h3 class="font-semibold text-gray-800 mb-2">Implementasi SCAMPER dalam Pembelajaran IPA</h3>
+                            <p class="text-gray-600 text-sm mb-3">Bagaimana cara menerapkan metode SCAMPER untuk pembelajaran berbasis proyek di mata pelajaran IPA...</p>
+                            <div class="flex items-center justify-between text-sm text-gray-500">
+                                <div class="flex space-x-4"><span>👍 24</span><span>💬 12</span></div>
+                                <span class="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs">SCAMPER</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Thread 2 -->
+                <div class="bg-white rounded-2xl p-5 shadow-lg">
+                     <div class="flex items-start space-x-4">
+                        <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0">PA</div>
+                        <div class="flex-1">
+                            <div class="flex items-center justify-between mb-2">
+                                <h4 class="font-bold text-gray-800">Pak Ahmad</h4>
+                                <span class="text-gray-400 text-xs">4 jam lalu</span>
+                            </div>
+                            <h3 class="font-semibold text-gray-800 mb-2">Template RPP Kurikulum Merdeka</h3>
+                            <p class="text-gray-600 text-sm mb-3">Berbagi template RPP yang sudah disesuaikan dengan Kurikulum Merdeka untuk mata pelajaran matematika kelas 5...</p>
+                            <div class="flex items-center justify-between text-sm text-gray-500">
+                                <div class="flex space-x-4"><span>👍 18</span><span>💬 8</span></div>
+                                <span class="bg-cyan-100 text-cyan-700 px-2 py-1 rounded-full text-xs">RPP</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation Placeholder -->
+    <div id="bottom-nav-placeholder"></div>
+    
+    <!-- Include BottomNav Component -->
+    <script type="module">
+        import BottomNav from '../../../public/js/components/BottomNav.js';
+        document.addEventListener('DOMContentLoaded', () => {
+            BottomNav.init('forum');
+        });
+    </script>
+
+    <!-- New Post Modal -->
+    <div id="new-post-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-2xl p-6 w-full max-w-md mx-4">
+            <h2 class="text-xl font-bold mb-4">Buat Postingan Baru</h2>
+            <form id="new-post-form">
+                <div class="mb-4">
+                    <label for="post-title" class="block text-sm font-medium text-gray-700 mb-1">Judul</label>
+                    <input type="text" id="post-title" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-500" required>
+                </div>
+                <div class="mb-4">
+                    <label for="post-content" class="block text-sm font-medium text-gray-700 mb-1">Isi</label>
+                    <textarea id="post-content" rows="4" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-500" required></textarea>
+                </div>
+                <div class="flex justify-end space-x-2">
+                    <button type="button" id="cancel-post-button" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg">Batal</button>
+                    <button type="submit" class="bg-cyan-500 text-white px-4 py-2 rounded-lg">Kirim</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Navigation is now handled by BottomNav component
+        document.addEventListener('DOMContentLoaded', () => {
+            // Any additional forum page initialization can go here
+        });
+    </script>
+    <script src="../../js/components/forum/forum-search.js" defer></script>
+    <script type="module" src="../../js/components/forum/forum-logic.js"></script>
+</body>
+</html>
