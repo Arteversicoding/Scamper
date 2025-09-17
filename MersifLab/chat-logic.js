@@ -1,4 +1,11 @@
 import { getChatResponse, getResponseWithContext } from './gemini-service.js';
+import { saveChatMessageToFirestore, getChatHistoryFromFirestore } from './auth-service.js';
+
+// --- Helper Functions ---
+function getCurrentUserFromStorage() {
+    const user = localStorage.getItem('currentUser');
+    return user ? JSON.parse(user) : null;
+}
 
 // State untuk menyimpan konteks dari file dan histori chat
 let fileContext = null;
@@ -55,16 +62,19 @@ JSON Structure:
 
 document.addEventListener('DOMContentLoaded', () => {
     setActiveNav();
+    loadChatHistory(); // Muat riwayat obrolan saat halaman dimuat
 
     const sendButton = document.getElementById('send-button');
     const chatInput = document.getElementById('chatInput');
     const fileUploadButton = document.getElementById('file-upload-button');
     const fileInput = document.getElementById('file-input');
+    const historyButton = document.getElementById('chat-history-button');
 
     if(sendButton) sendButton.addEventListener('click', sendMessage);
     if(chatInput) chatInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') sendMessage();
     });
+    if(historyButton) historyButton.addEventListener('click', handleHistoryButtonClick);
 
     if(fileUploadButton) {
         fileUploadButton.addEventListener('click', (e) => {
@@ -90,12 +100,12 @@ function setActiveNav() {
     });
 }
 
-function addMessageToChat(message, sender, isLoading = false) {
+function addMessageToChat(message, sender, isLoading = false, timestamp = null) {
     const chatContainer = document.getElementById('chat-messages');
     if (!chatContainer) return;
 
     const messageId = `msg-${Date.now()}`;
-    const time = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+    const time = timestamp ? new Date(timestamp).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
 
     let messageHTML;
     if (sender === 'user') {
@@ -122,29 +132,30 @@ function addMessageToChat(message, sender, isLoading = false) {
     }
     chatContainer.insertAdjacentHTML('beforeend', messageHTML);
     
-    // Auto-scroll to new message
     if (sender === 'user') {
-        forceScrollToBottom(); // Immediate scroll for user messages
+        forceScrollToBottom();
     } else {
-        scrollToBottom(); // Smooth scroll for AI messages
+        scrollToBottom();
     }
     
     return messageId;
 }
 
 async function handleChatInteraction(prompt) {
+    const currentUser = getCurrentUserFromStorage();
     addMessageToChat(prompt, 'user');
+    if (currentUser) {
+        await saveChatMessageToFirestore(currentUser.uid, prompt, 'user');
+    }
+
     const loadingMsgId = addMessageToChat('', 'ai', true);
 
     try {
         let responseText;
         
-        // Check if this is a curriculum design request
         const isCurriculumRequest = detectCurriculumRequest(prompt);
         
         if (fileContext) {
-            // Saat ada konteks file, kita tidak mengirim histori chat sebelumnya agar fokus pada file.
-            // Ini bisa disesuaikan jika ingin AI tetap mengingat chat sebelumnya.
             const contextualPrompt = isCurriculumRequest ? 
                 `${CURRICULUM_SYSTEM_PROMPT}\n\nUser request: ${prompt}` : prompt;
             responseText = await getResponseWithContext(fileContext, contextualPrompt, []); 
@@ -154,21 +165,21 @@ async function handleChatInteraction(prompt) {
             responseText = await getChatResponse(contextualPrompt, chatHistory);
         }
         
-        // Check if response contains curriculum JSON and render it
         if (isCurriculumRequest && responseText.includes('"cp":')) {
             renderCurriculumResponse(loadingMsgId, responseText);
         } else {
-            // Format regular AI responses with proper structure
             const formattedResponse = formatAIResponse(responseText);
             updateMessage(loadingMsgId, formattedResponse);
         }
         
-        // Enhanced scroll after AI response with delay for content rendering
+        if (currentUser) {
+            await saveChatMessageToFirestore(currentUser.uid, responseText, 'ai');
+        }
+        
         setTimeout(() => {
             scrollToBottom();
         }, 200);
         
-        // Simpan ke histori hanya jika tidak ada konteks file
         if (!fileContext) {
             chatHistory.push({ role: "user", parts: [{ text: prompt }] });
             chatHistory.push({ role: "model", parts: [{ text: responseText }] });
@@ -177,16 +188,14 @@ async function handleChatInteraction(prompt) {
     } catch (error) {
         console.error(error);
         updateMessage(loadingMsgId, "Gagal mendapatkan respons dari AI.");
-        scrollToBottom(); // Scroll after error message
+        scrollToBottom();
     }
 }
 
-// Enhanced smooth autoscroll function
 function scrollToBottom() {
     const chatContainer = document.getElementById('chat-messages');
     if (!chatContainer) return;
     
-    // Use setTimeout to ensure DOM is updated before scrolling
     setTimeout(() => {
         chatContainer.scrollTo({
             top: chatContainer.scrollHeight,
@@ -195,7 +204,6 @@ function scrollToBottom() {
     }, 100);
 }
 
-// Force scroll to bottom without animation (for immediate updates)
 function forceScrollToBottom() {
     const chatContainer = document.getElementById('chat-messages');
     if (!chatContainer) return;
@@ -220,21 +228,15 @@ function updateMessage(messageId, content) {
     if (messageElement) {
         const contentP = messageElement.querySelector('p');
         if (contentP) {
-            // Remove asterisks and format content with proper line breaks
             let cleanContent = content.replace(/\*/g, '');
-            
-            // Format the content with proper line breaks and structure
             cleanContent = formatAIResponse(cleanContent);
-            
             contentP.innerHTML = cleanContent;
             
-            // Auto-scroll after content update
             setTimeout(() => {
                 scrollToBottom();
             }, 150);
         }
         
-        // Remove loading indicator (dot-flashing)
         const loadingDiv = messageElement.querySelector('.dot-flashing');
         if (loadingDiv) {
             loadingDiv.remove();
@@ -248,13 +250,12 @@ async function handleFileUpload(event) {
 
     if (file.type !== 'application/pdf') {
         addMessageToChat('Maaf, saat ini saya hanya bisa memproses file PDF.', 'ai');
-        event.target.value = ''; // Reset file input
+        event.target.value = '';
         return;
     }
 
     const loadingMsgId = addMessageToChat(`Menganalisis file: <b>${file.name}</b>...`, 'ai', true);
     
-    // Show upload progress
     showNotification('Memulai upload PDF...', 'info');
 
     try {
@@ -276,7 +277,7 @@ async function handleFileUpload(event) {
                 updateMessage(loadingMsgId, `Analisis <b>${file.name}</b> selesai. Sekarang Anda bisa bertanya tentang isi dokumen ini.`);
                 setTimeout(() => {
                     scrollToBottom();
-                }, 200); // Scroll after file upload completion
+                }, 200);
             } catch (pdfError) {
                 console.error('Error parsing PDF:', pdfError);
                 updateMessage(loadingMsgId, 'Gagal membaca konten PDF.');
@@ -292,6 +293,58 @@ async function handleFileUpload(event) {
     }
 }
 
+// --- Chat History Functions ---
+async function loadChatHistory() {
+    const currentUser = getCurrentUserFromStorage();
+    if (!currentUser) {
+        console.log("User not logged in, not loading history.");
+        return;
+    }
+
+    try {
+        const history = await getChatHistoryFromFirestore(currentUser.uid);
+        const chatContainer = document.getElementById('chat-messages');
+        
+        // Clear everything except the initial welcome message and suggestions
+        const welcomeMessage = chatContainer.querySelector('.flex.items-start.space-x-3');
+        const suggestions = chatContainer.querySelector('.pt-4');
+        chatContainer.innerHTML = ''; // Clear all
+        if (welcomeMessage) chatContainer.appendChild(welcomeMessage);
+        if (suggestions) chatContainer.appendChild(suggestions);
+
+        if (history.length > 0) {
+            history.forEach(msg => {
+                addMessageToChat(msg.message, msg.sender, false, msg.created_at);
+            });
+            showNotification('Riwayat obrolan berhasil dimuat.', 'success');
+        } else {
+            // No history, do nothing, keep the welcome message
+        }
+        
+        setTimeout(() => forceScrollToBottom(), 300);
+
+    } catch (error) {
+        console.error("Failed to load chat history:", error);
+        showNotification('Gagal memuat riwayat obrolan.', 'error');
+    }
+}
+
+async function handleHistoryButtonClick() {
+    const chatContainer = document.getElementById('chat-messages');
+    // Preserve welcome message and suggestions if they exist
+    const welcomeMessage = chatContainer.querySelector('.flex.items-start.space-x-3');
+    const suggestions = chatContainer.querySelector('.pt-4');
+    
+    chatContainer.innerHTML = '<p class="text-center text-gray-500">Memuat riwayat obrolan...</p>';
+    
+    // Restore welcome message and suggestions if they exist
+    if (welcomeMessage) chatContainer.prepend(welcomeMessage);
+    if (suggestions) chatContainer.append(suggestions);
+
+    await loadChatHistory();
+}
+
+
 // Function to detect curriculum design requests
 function detectCurriculumRequest(prompt) {
     const keywords = ['tujuan pembelajaran', 'tp', 'capaian pembelajaran', 'cp', 'scamper', 'kurikulum merdeka', 'rpp', 'silabus', 'pembelajaran'];
@@ -301,14 +354,12 @@ function detectCurriculumRequest(prompt) {
 // Function to render curriculum response with table
 function renderCurriculumResponse(messageId, responseText) {
     try {
-        // Extract JSON from response
         const jsonMatch = responseText.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
             const curriculumData = JSON.parse(jsonMatch[0]);
             const tableHTML = generateCurriculumTable(curriculumData);
             const fullResponse = responseText.replace(jsonMatch[0], tableHTML);
             updateMessage(messageId, fullResponse);
-            // Extra scroll for curriculum tables
             setTimeout(() => {
                 scrollToBottom();
             }, 300);
@@ -325,7 +376,6 @@ function renderCurriculumResponse(messageId, responseText) {
 function generateCurriculumTable(data) {
     if (!data.table || !Array.isArray(data.table)) return '';
     
-    // Generate source citation if available
     let sourceHTML = '';
     if (data.source) {
         const { book, chapter, page, section } = data.source;
@@ -404,19 +454,12 @@ function generateCurriculumTable(data) {
 
 // Function to format AI response with proper structure
 function formatAIResponse(content) {
-    // Split content into paragraphs
     let formatted = content
-        // Add line breaks before numbered lists
         .replace(/(\d+\.)\s/g, '<br><strong>$1</strong> ')
-        // Add line breaks before bullet points
         .replace(/([•\-])\s/g, '<br>$1 ')
-        // Add line breaks before section headers (words ending with colon)
         .replace(/([A-Za-z\s]+:)(?=\s[A-Z])/g, '<br><strong>$1</strong>')
-        // Add line breaks after sentences ending with period (but not abbreviations)
         .replace(/([a-z])\. ([A-Z])/g, '$1.<br><br>$2')
-        // Clean up multiple consecutive line breaks
         .replace(/<br>\s*<br>\s*<br>/g, '<br><br>')
-        // Remove leading line breaks
         .replace(/^<br>/, '');
     
     return formatted;
@@ -427,7 +470,6 @@ function exportToWord(dataStr) {
     try {
         const data = JSON.parse(dataStr.replace(/&quot;/g, '"'));
         
-        // Generate source citation for Word document
         let sourceSection = '';
         if (data.source) {
             const { book, chapter, page, section } = data.source;
@@ -536,7 +578,7 @@ function copyJSON(dataStr) {
 // Function to show notifications
 function showNotification(message, type = 'info') {
     const notification = document.createElement('div');
-    notification.className = `fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg text-white ${
+    notification.className = `fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg text-white ${ 
         type === 'success' ? 'bg-green-500' : 
         type === 'error' ? 'bg-red-500' : 'bg-blue-500'
     }`;
@@ -558,7 +600,6 @@ function shareResult(dataStr) {
                 url: window.location.href
             });
         } else {
-            // Fallback: copy to clipboard
             navigator.clipboard.writeText(shareText).then(() => {
                 showNotification('Link dan ringkasan berhasil disalin!', 'success');
             });

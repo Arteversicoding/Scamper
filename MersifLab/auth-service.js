@@ -9,7 +9,7 @@ import {
     setPersistence,
     browserSessionPersistence
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, doc, setDoc, getDoc, updateDoc, collection, addDoc, query, orderBy, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { app, auth } from "./firebase-init.js";
 
 const db = getFirestore(app);
@@ -273,7 +273,7 @@ export class AuthService {
         });
     }
 
-    async getFriendlyErrorMessage(error) {
+    getFriendlyErrorMessage(error) {
         switch (error.code) {
             case 'auth/email-already-in-use':
                 return 'Email ini sudah terdaftar. Silakan gunakan email lain atau login.';
@@ -328,5 +328,64 @@ export class AuthService {
                 throw new Error(this.getFriendlyErrorMessage(error));
             }
         }
+    }
+}
+
+// --- Firestore Chat History Functions ---
+
+/**
+ * Saves a chat message to a user's chat history subcollection in Firestore.
+ * @param {string} userId - The ID of the user.
+ * @param {string} message - The chat message content.
+ * @param {string} sender - Who sent the message ('user' or 'ai').
+ */
+export async function saveChatMessageToFirestore(userId, message, sender) {
+    if (!userId) {
+        console.warn('User ID is not available, skipping chat message save.');
+        return;
+    }
+    try {
+        const historyCollectionRef = collection(db, 'users', userId, 'chat_history');
+        await addDoc(historyCollectionRef, {
+            message: message,
+            sender: sender,
+            createdAt: serverTimestamp()
+        });
+    } catch (error) {
+        console.error("Error saving chat message to Firestore:", error);
+        throw new Error('Gagal menyimpan pesan ke Firestore.');
+    }
+}
+
+/**
+ * Retrieves the chat history for a user from Firestore.
+ * @param {string} userId - The ID of the user.
+ * @returns {Array} - An array of chat message objects.
+ */
+export async function getChatHistoryFromFirestore(userId) {
+    if (!userId) {
+        console.warn('User ID is not available, skipping chat history retrieval.');
+        return [];
+    }
+    try {
+        const historyCollectionRef = collection(db, 'users', userId, 'chat_history');
+        const q = query(historyCollectionRef, orderBy("createdAt", "asc"));
+        const querySnapshot = await getDocs(q);
+        
+        const history = [];
+        querySnapshot.forEach((doc) => {
+            const data = doc.data();
+            history.push({
+                id: doc.id,
+                message: data.message,
+                sender: data.sender,
+                // Convert Firestore Timestamp to JS Date object for consistency
+                created_at: data.createdAt ? data.createdAt.toDate().toISOString() : new Date().toISOString()
+            });
+        });
+        return history;
+    } catch (error) {
+        console.error("Error getting chat history from Firestore:", error);
+        throw new Error('Gagal mengambil riwayat obrolan dari Firestore.');
     }
 }

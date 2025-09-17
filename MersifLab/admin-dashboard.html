@@ -18,6 +18,7 @@
         }
     </style>
     <script type="module" src="auth-guard.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
 </head>
 <body class="bg-gray-50 min-h-screen">
     <!-- Navigation -->
@@ -25,17 +26,17 @@
         <div class="max-w-7xl mx-auto px-4">
             <div class="flex justify-between items-center py-4">
                 <div class="flex items-center space-x-4">
-                    <a href="index.html" class="text-2xl font-bold text-cyan-600">
+                    <a href="index.html" class="text-2xl font-bold text-gray-600">
                         <i class="fas fa-graduation-cap mr-2"></i>AI Project Planner
                     </a>
-                    <span class="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm font-medium">ADMIN</span>
+                    <span class="bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-sm font-medium">ADMIN</span>
                 </div>
                 <div class="flex items-center space-x-4">
-                    <a href="index.html" class="text-gray-600 hover:text-cyan-600 transition-colors">
+                    <a href="index.html" class="text-gray-600 hover:text-gray-600 transition-colors">
                         <i class="fas fa-home mr-2"></i>Beranda
                     </a>
                     
-                    <button onclick="logout()" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors">
+                    <button onclick="logout()" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors">
                         <i class="fas fa-sign-out-alt mr-2"></i>Logout
                     </button>
                 </div>
@@ -55,8 +56,8 @@
         <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
             <div class="stat-card bg-white rounded-xl shadow-lg p-6">
                 <div class="flex items-center">
-                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-users text-blue-600 text-xl"></i>
+                    <div class="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-users text-gray-600 text-xl"></i>
                     </div>
                     <div class="ml-4">
                         <p class="text-sm font-medium text-gray-600">Total Users</p>
@@ -67,8 +68,8 @@
 
             <div class="stat-card bg-white rounded-xl shadow-lg p-6">
                 <div class="flex items-center">
-                    <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-book text-green-600 text-xl"></i>
+                    <div class="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-book text-gray-600 text-xl"></i>
                     </div>
                     <div class="ml-4">
                         <p class="text-sm font-medium text-gray-600">Total RPP</p>
@@ -81,8 +82,8 @@
 
             <div class="stat-card bg-white rounded-xl shadow-lg p-6">
                 <div class="flex items-center">
-                    <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-comments text-purple-600 text-xl"></i>
+                    <div class="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-comments text-gray-600 text-xl"></i>
                     </div>
                     <div class="ml-4">
                         <p class="text-sm font-medium text-gray-600">Sesi AI Planner</p>
@@ -93,8 +94,8 @@
 
             <div class="stat-card bg-white rounded-xl shadow-lg p-6">
                 <div class="flex items-center">
-                    <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-chart-bar text-orange-600 text-xl"></i>
+                    <div class="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-chart-bar text-gray-600 text-xl"></i>
                     </div>
                     <div class="ml-4">
                         <p class="text-sm font-medium text-gray-600">Feedback Guru</p>
@@ -116,17 +117,17 @@
             <form id="materialForm" class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end mb-6">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Judul</label>
-                    <input id="materialTitle" type="text" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Masukkan judul materi" required>
+                    <input id="materialTitle" type="text" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-500" placeholder="Masukkan judul materi" required>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Deskripsi</label>
-                    <input id="materialDesc" type="text" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Deskripsi singkat" required>
+                    <input id="materialDesc" type="text" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-500" placeholder="Deskripsi singkat" required>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                     <input id="materialFile" type="file" class="w-full text-sm">
-                    <input id="materialLink" type="url" placeholder="Atau tempelkan URL materi" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <input id="materialLink" type="url" placeholder="Atau tempelkan URL materi" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-500">
                     <div class="flex gap-2">
-                        <button type="submit" id="saveMaterialBtn" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50">
+                        <button type="submit" id="saveMaterialBtn" class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors disabled:opacity-50">
 Simpan
 </button>
                     </div>
@@ -137,26 +138,35 @@ Simpan
             <div id="materialsList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
         </div>
 
-        <!-- Quick Actions -->
-        <div class="bg-white rounded-xl shadow-lg p-6">
-            <h3 class="text-xl font-semibold text-gray-800 mb-6">Quick Actions</h3>
-            
-            <div class="flex flex-wrap gap-4">
-                <button onclick="exportData()" class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors">
-                    <i class="fas fa-download mr-2"></i>Export Data
-                </button>
-                <button onclick="exportSurveyData()" class="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors">
-                    <i class="fas fa-chart-line mr-2"></i>Export Survey Data
-                </button>
-                <button onclick="refreshStats()" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors">
-                    <i class="fas fa-refresh mr-2"></i>Refresh Stats
-                </button>
+        <!-- PDF Extractor -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+            <h3 class="text-xl font-semibold text-gray-800 mb-6">PDF Text Extractor</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">File PDF</label>
+                    <input id="pdfFile" type="file" accept=".pdf" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Judul Dokumen</label>
+                    <input id="pdfTitle" type="text" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-500" placeholder="Masukkan judul untuk referensi">
+                </div>
+                <div class="flex items-end">
+                    <button id="extractAndSendBtn" class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors disabled:opacity-50 w-full">
+                        <i class="fas fa-file-upload mr-2"></i>Ekstrak & Kirim ke Firebase
+                    </button>
+                </div>
+            </div>
+            <div id="pdf-text-container" class="hidden mt-4 p-4 bg-gray-100 rounded-lg max-h-60 overflow-y-auto">
+                <h4 class="font-bold mb-2">Teks yang Diekstrak:</h4>
+                <pre id="pdf-text-output" class="whitespace-pre-wrap text-sm"></pre>
             </div>
         </div>
+
+        
     </div>
 
     <!-- Notification -->
-    <div id="notification" class="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg transform translate-x-full transition-transform duration-300 z-50">
+    <div id="notification" class="fixed top-4 right-4 bg-gray-500 text-white px-6 py-3 rounded-lg shadow-lg transform translate-x-full transition-transform duration-300 z-50">
         <div class="flex items-center">
             <i class="fas fa-check-circle mr-2"></i>
             <span id="notificationText"></span>
@@ -284,9 +294,9 @@ Simpan
             notification.className = `fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg transform transition-transform duration-300 z-50`;
             
             if (type === 'success') {
-                notification.classList.add('bg-green-500', 'text-white');
+                notification.classList.add('bg-gray-500', 'text-white');
             } else {
-                notification.classList.add('bg-red-500', 'text-white');
+                notification.classList.add('bg-gray-500', 'text-white');
             }
             
             notification.classList.remove('translate-x-full');
@@ -316,7 +326,7 @@ Simpan
                         <p class="font-bold text-gray-800">${item.title}</p>
                         <p class="text-sm text-gray-600">${item.description}</p>
                     </div>
-                    <button class="delete-material-btn text-red-500 hover:text-red-700 p-2" data-id="${item.id}" data-filepath="${item.filePath || ''}">
+                    <button class="delete-material-btn text-gray-500 hover:text-gray-700 p-2" data-id="${item.id}" data-filepath="${item.filePath || ''}">
                         <i class="fas fa-trash-alt"></i>
                     </button>
                 </div>
@@ -374,6 +384,102 @@ Simpan
         window.exportSurveyData = () => { console.log("Exporting survey data..."); };
         window.refreshStats = () => { console.log("Refreshing stats..."); };
         window.logout = logout;
+    </script>
+
+    <script type="module">
+        import { db } from './firebase-init.js';
+        import { collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        const extractBtn = document.getElementById('extractAndSendBtn');
+        const pdfFileInput = document.getElementById('pdfFile');
+        const pdfTitleInput = document.getElementById('pdfTitle');
+        const textContainer = document.getElementById('pdf-text-container');
+        const textOutput = document.getElementById('pdf-text-output');
+
+        // Setup PDF.js worker
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.worker.min.js';
+
+        extractBtn.addEventListener('click', async () => {
+            const file = pdfFileInput.files[0];
+            const title = pdfTitleInput.value.trim();
+
+            if (!file || !title) {
+                showNotification('❌ Judul dan file PDF wajib diisi!', 'error');
+                return;
+            }
+
+            extractBtn.disabled = true;
+            extractBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Mengekstrak...';
+
+            try {
+                const reader = new FileReader();
+                reader.onload = async (event) => {
+                    try {
+                        const pdf = await pdfjsLib.getDocument({ data: event.target.result }).promise;
+                        let fullText = '';
+                        for (let i = 1; i <= pdf.numPages; i++) {
+                            const page = await pdf.getPage(i);
+                            const textContent = await page.getTextContent();
+                            fullText += textContent.items.map(item => item.str).join(' ') + '\n\n';
+                        }
+
+                        textOutput.textContent = fullText;
+                        textContainer.classList.remove('hidden');
+                        showNotification('✅ Ekstraksi teks berhasil!', 'success');
+
+                        // Send to Firebase
+                        await saveTextToFirestore(title, fullText);
+
+                    } catch (err) {
+                        console.error('Error during PDF processing:', err);
+                        showNotification(`❌ Gagal memproses PDF: ${err.message}`, 'error');
+                    }
+                };
+                reader.readAsArrayBuffer(file);
+
+            } catch (err) {
+                console.error('Error reading file:', err);
+                showNotification(`❌ Gagal membaca file: ${err.message}`, 'error');
+            } finally {
+                extractBtn.disabled = false;
+                extractBtn.innerHTML = '<i class="fas fa-file-upload mr-2"></i>Ekstrak & Kirim ke Firebase';
+            }
+        });
+
+        async function saveTextToFirestore(title, content) {
+            try {
+                const docRef = await addDoc(collection(db, "extracted_content"), {
+                    title: title,
+                    content: content,
+                    createdAt: serverTimestamp()
+                });
+                showNotification(`✅ Berhasil dikirim ke Firebase dengan ID: ${docRef.id}`, 'success');
+            } catch (e) {
+                console.error("Error adding document: ", e);
+                showNotification(`❌ Gagal mengirim ke Firebase: ${e.message}`, 'error');
+            }
+        }
+
+        // Re-using the existing notification function
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            const notificationText = document.getElementById('notificationText');
+            notificationText.textContent = message;
+            
+            notification.className = `fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg transform transition-transform duration-300 z-50`;
+            
+            if (type === 'success') {
+                notification.classList.add('bg-gray-500', 'text-white');
+            } else {
+                notification.classList.add('bg-gray-500', 'text-white');
+            }
+            
+            notification.classList.remove('translate-x-full');
+            setTimeout(() => {
+                notification.classList.add('translate-x-full');
+            }, 5000); // Increased timeout for longer messages
+        }
+
     </script>
 </body>
 </html>

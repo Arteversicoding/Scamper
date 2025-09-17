@@ -8,11 +8,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; }
-        .gradient-bg { background: linear-gradient(135deg, #00a2e1 0%, #0ea5e9 100%); }
+        .gradient-bg { background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%); }
         
         .loading-spinner {
             border: 2px solid #f3f3f3;
-            border-top: 2px solid #00a2e1;
+                        border-top: 2px solid #718096;
             border-radius: 50%;
             width: 20px;
             height: 20px;
@@ -30,21 +30,17 @@
             transition: all 0.3s ease;
         }
         
-        .strength-weak { background: #ef4444; width: 25%; }
-        .strength-fair { background: #f59e0b; width: 50%; }
-        .strength-good { background: #10b981; width: 75%; }
-        .strength-strong { background: #059669; width: 100%; }
+        .strength-weak { background: #9ca3af; width: 25%; }
+        .strength-fair { background: #9ca3af; width: 50%; }
+        .strength-good { background: #9ca3af; width: 75%; }
+        .strength-strong { background: #9ca3af; width: 100%; }
     </style>
 </head>
-<body class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-cyan-100 flex items-center justify-center p-4">
+<body class="min-h-screen bg-gradient-to-br from-gray-50 via-gray-100 to-gray-200 flex items-center justify-center p-4">
     <div class="w-full max-w-md">
         <!-- Logo & Title -->
         <div class="text-center mb-8">
-            <div class="w-32 h-20 bg-white rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg p-3">
-                <img src="assets/logo.png" 
-                     alt="Mersiflab Logo" 
-                     class="w-full h-full object-contain">
-            </div>
+            
             <h1 class="text-3xl font-bold text-gray-800 mb-2">AI Project Planner</h1>
             <p class="text-gray-600">Bergabung untuk merencanakan pembelajaran</p>
         </div>
@@ -56,13 +52,13 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Nama Depan</label>
                         <input type="text" id="firstName" required 
-                               class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                               class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent"
                                placeholder="Nama depan">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Nama Belakang</label>
                         <input type="text" id="lastName" required 
-                               class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                               class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent"
                                placeholder="Nama belakang">
                     </div>
                 </div>
@@ -70,34 +66,23 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
                     <input type="email" id="email" required 
-                           class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                           class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent"
                            placeholder="Masukkan email Anda">
                 </div>
 
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Profesi</label>
-                    <select id="profession" required 
-                            class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent">
-                        <option value="">Pilih profesi</option>
-                        <option value="developer">Developer</option>
-                        <option value="engineer">Engineer</option>
-                        <option value="researcher">Researcher</option>
-                        <option value="student">Student</option>
-                        <option value="lainnya">Lainnya</option>
-                    </select>
-                </div>
+                
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Institusi</label>
                     <input type="text" id="institution" 
-                           class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                           class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent"
                            placeholder="Nama sekolah/institusi (opsional)">
                 </div>
                 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
                     <input type="password" id="password" required 
-                           class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                           class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent"
                            placeholder="Minimal 8 karakter">
                     <div class="mt-2" id="passwordStrengthContainer" style="display: none;">
                         <div class="password-strength" id="passwordStrengthBar"></div>
@@ -108,13 +93,13 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Konfirmasi Password</label>
                     <input type="password" id="confirmPassword" required 
-                           class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                           class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent"
                            placeholder="Ulangi password">
                     <p class="text-xs text-gray-500 mt-1" id="passwordMatchText"></p>
                 </div>
 
                 <div class="flex items-center">
-                    <input type="checkbox" id="terms" required class="rounded border-gray-300 text-cyan-600 focus:ring-cyan-500">
+                    <input type="checkbox" id="terms" required class="rounded border-gray-300 text-cyan-600 focus:ring-gray-500">
                     <label for="terms" class="ml-2 text-sm text-gray-600">
                         Saya setuju dengan <a href="#" class="text-cyan-600 hover:text-cyan-500">Syarat & Ketentuan</a>
                     </label>
