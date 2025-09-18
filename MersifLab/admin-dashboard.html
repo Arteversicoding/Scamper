@@ -114,53 +114,49 @@
             <h3 class="text-xl font-semibold text-gray-800 mb-6">Materials Manager</h3>
 
             <!-- Upload Form -->
-            <form id="materialForm" class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end mb-6">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Judul</label>
-                    <input id="materialTitle" type="text" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-500" placeholder="Masukkan judul materi" required>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Deskripsi</label>
-                    <input id="materialDesc" type="text" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-500" placeholder="Deskripsi singkat" required>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                    <input id="materialFile" type="file" class="w-full text-sm">
-                    <input id="materialLink" type="url" placeholder="Atau tempelkan URL materi" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-500">
-                    <div class="flex gap-2">
-                        <button type="submit" id="saveMaterialBtn" class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors disabled:opacity-50">
-Simpan
-</button>
+            <form id="materialForm" class="space-y-4 mb-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Judul Materi</label>
+                        <input id="materialTitle" type="text" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-500" placeholder="Masukkan judul materi" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">URL Materi (Opsional)</label>
+                        <input id="materialLink" type="url" placeholder="Tempelkan URL materi (misal: YouTube, artikel)" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-500">
                     </div>
                 </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Deskripsi / Teks Materi</label>
+                    <textarea id="materialDesc" rows="6" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-500" placeholder="Deskripsi singkat atau teks materi yang diekstrak" required></textarea>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Unggah File (Opsional)</label>
+                        <input id="materialFile" type="file" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-gray-500 file:text-white hover:file:bg-gray-600">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Unggah & Ekstrak PDF (Opsional)</label>
+                        <div class="flex space-x-2">
+                            <input id="pdfMaterialFile" type="file" accept=".pdf" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-gray-500 file:text-white hover:file:bg-gray-600">
+                            <button type="button" id="extractPdfToDescriptionBtn" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors text-sm flex-shrink-0">
+                                <i class="fas fa-file-pdf mr-2"></i>Ekstrak PDF
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <input type="hidden" id="pdfExtractedText">
+                <button type="submit" id="saveMaterialBtn" class="w-full bg-gray-600 text-white px-4 py-3 rounded-lg hover:bg-gray-700 transition-colors disabled:opacity-50 text-base font-medium">
+                    <i class="fas fa-save mr-2"></i>Simpan Materi
+                </button>
             </form>
 
             <!-- List -->
             <div id="materialsList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
         </div>
 
-        <!-- PDF Extractor -->
-        <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
-            <h3 class="text-xl font-semibold text-gray-800 mb-6">PDF Text Extractor</h3>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">File PDF</label>
-                    <input id="pdfFile" type="file" accept=".pdf" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-500">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Judul Dokumen</label>
-                    <input id="pdfTitle" type="text" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-500" placeholder="Masukkan judul untuk referensi">
-                </div>
-                <div class="flex items-end">
-                    <button id="extractAndSendBtn" class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors disabled:opacity-50 w-full">
-                        <i class="fas fa-file-upload mr-2"></i>Ekstrak & Kirim ke Firebase
-                    </button>
-                </div>
-            </div>
-            <div id="pdf-text-container" class="hidden mt-4 p-4 bg-gray-100 rounded-lg max-h-60 overflow-y-auto">
-                <h4 class="font-bold mb-2">Teks yang Diekstrak:</h4>
-                <pre id="pdf-text-output" class="whitespace-pre-wrap text-sm"></pre>
-            </div>
-        </div>
+
 
         
     </div>
@@ -188,6 +184,57 @@ Simpan
         // Inisialisasi
         const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
         const authService = new AuthService();
+
+        // Setup PDF.js worker
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.worker.min.js';
+
+        // Fungsi untuk ekstrak teks dari PDF
+        async function extractTextFromPdf(file) {
+            const arrayBuffer = await file.arrayBuffer();
+            const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
+            const pdf = await loadingTask.promise;
+            let fullText = '';
+            for (let i = 1; i <= pdf.numPages; i++) {
+                const page = await pdf.getPage(i);
+                const textContent = await page.getTextContent();
+                const pageText = textContent.items.map(item => item.str).join(' ');
+                fullText += pageText + '\n';
+            }
+            return fullText;
+        }
+
+        // Event listener untuk tombol ekstrak PDF
+        document.getElementById('extractPdfToDescriptionBtn').addEventListener('click', async () => {
+            const pdfFile = document.getElementById('pdfMaterialFile').files[0];
+            const materialTitle = document.getElementById('materialTitle').value.trim();
+            const materialDesc = document.getElementById('materialDesc');
+            const pdfExtractedText = document.getElementById('pdfExtractedText');
+            const extractBtn = document.getElementById('extractPdfToDescriptionBtn');
+
+            if (!pdfFile) {
+                showNotification('❌ Pilih file PDF terlebih dahulu!', 'error');
+                return;
+            }
+
+            extractBtn.disabled = true;
+            extractBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Mengekstrak...';
+
+            try {
+                const extractedText = await extractTextFromPdf(pdfFile);
+                materialDesc.value = extractedText; // Populate textarea with extracted text
+                pdfExtractedText.value = extractedText; // Store in hidden input
+                if (!materialTitle) { // If title is empty, try to set it from PDF filename
+                    document.getElementById('materialTitle').value = pdfFile.name.replace(/\.pdf$/i, '');
+                }
+                showNotification('✅ Teks PDF berhasil diekstrak ke deskripsi!', 'success');
+            } catch (error) {
+                console.error('Error extracting PDF text:', error);
+                showNotification(`❌ Gagal mengekstrak teks PDF: ${error.message}`, 'error');
+            } finally {
+                extractBtn.disabled = false;
+                extractBtn.innerHTML = '<i class="fas fa-file-pdf mr-2"></i>Ekstrak PDF';
+            }
+        });
 
         // Fungsi untuk upload file ke Supabase Storage
         async function uploadFileToSupabase(file, title, description) {
@@ -237,25 +284,29 @@ Simpan
             e.preventDefault();
             const saveBtn = document.getElementById("saveMaterialBtn");
             const title = document.getElementById("materialTitle").value.trim();
-            const description = document.getElementById("materialDesc").value.trim();
+            const descriptionFromTextarea = document.getElementById("materialDesc").value.trim();
+            const pdfExtractedText = document.getElementById("pdfExtractedText").value.trim(); // Get extracted text from hidden input
             const fileInput = document.getElementById("materialFile");
             const file = fileInput.files[0];
             const linkUrl = document.getElementById("materialLink").value.trim();
 
+            // Determine the final description to use
+            const finalDescription = pdfExtractedText || descriptionFromTextarea;
+
             saveBtn.disabled = true;
             saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Menyimpan...';
 
-            if (!title || !description) {
-                showNotification("❌ Judul & Deskripsi wajib diisi!", "error");
+            if (!title || !finalDescription) {
+                showNotification("❌ Judul & Deskripsi/Teks Materi wajib diisi!", "error");
                 saveBtn.disabled = false;
-                saveBtn.innerHTML = 'Simpan';
+                saveBtn.innerHTML = '<i class="fas fa-save mr-2"></i>Simpan Materi';
                 return;
             }
 
-            if (!file && !linkUrl) {
-                showNotification("❌ Pilih file ATAU masukkan link!", "error");
+            if (!file && !linkUrl && !pdfExtractedText) { // Ensure at least one content source
+                showNotification("❌ Pilih file, masukkan link, atau ekstrak PDF!", "error");
                 saveBtn.disabled = false;
-                saveBtn.innerHTML = 'Simpan';
+                saveBtn.innerHTML = '<i class="fas fa-save mr-2"></i>Simpan Materi';
                 return;
             }
 
@@ -263,25 +314,27 @@ Simpan
                 let finalLink = linkUrl;
                 let uploadResult = null;
                 if (file) {
-                    uploadResult = await uploadFileToSupabase(file, title, description);
+                    uploadResult = await uploadFileToSupabase(file, title, finalDescription);
                     finalLink = uploadResult.publicUrl;
                 }
 
                 await createMaterial({ 
                     title, 
-                    description, 
+                    description: finalDescription, // Use the determined final description
                     linkUrl: finalLink, 
                     filePath: file ? uploadResult.fileName : '' 
                 });
                 showNotification("✅ Materi berhasil disimpan!", "success");
                 document.getElementById("materialForm").reset();
+                document.getElementById("pdfMaterialFile").value = ''; // Clear PDF file input
+                document.getElementById("pdfExtractedText").value = ''; // Clear hidden extracted text
 
             } catch (err) {
                 console.error("Gagal menyimpan materi:", err);
                 showNotification(`❌ Gagal simpan materi: ${err.message}`, "error");
             } finally {
                 saveBtn.disabled = false;
-                saveBtn.innerHTML = 'Simpan';
+                saveBtn.innerHTML = '<i class="fas fa-save mr-2"></i>Simpan Materi';
             }
         });
 
@@ -386,100 +439,4 @@ Simpan
         window.logout = logout;
     </script>
 
-    <script type="module">
-        import { db } from './firebase-init.js';
-        import { collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-        const extractBtn = document.getElementById('extractAndSendBtn');
-        const pdfFileInput = document.getElementById('pdfFile');
-        const pdfTitleInput = document.getElementById('pdfTitle');
-        const textContainer = document.getElementById('pdf-text-container');
-        const textOutput = document.getElementById('pdf-text-output');
-
-        // Setup PDF.js worker
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.worker.min.js';
-
-        extractBtn.addEventListener('click', async () => {
-            const file = pdfFileInput.files[0];
-            const title = pdfTitleInput.value.trim();
-
-            if (!file || !title) {
-                showNotification('❌ Judul dan file PDF wajib diisi!', 'error');
-                return;
-            }
-
-            extractBtn.disabled = true;
-            extractBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Mengekstrak...';
-
-            try {
-                const reader = new FileReader();
-                reader.onload = async (event) => {
-                    try {
-                        const pdf = await pdfjsLib.getDocument({ data: event.target.result }).promise;
-                        let fullText = '';
-                        for (let i = 1; i <= pdf.numPages; i++) {
-                            const page = await pdf.getPage(i);
-                            const textContent = await page.getTextContent();
-                            fullText += textContent.items.map(item => item.str).join(' ') + '\n\n';
-                        }
-
-                        textOutput.textContent = fullText;
-                        textContainer.classList.remove('hidden');
-                        showNotification('✅ Ekstraksi teks berhasil!', 'success');
-
-                        // Send to Firebase
-                        await saveTextToFirestore(title, fullText);
-
-                    } catch (err) {
-                        console.error('Error during PDF processing:', err);
-                        showNotification(`❌ Gagal memproses PDF: ${err.message}`, 'error');
-                    }
-                };
-                reader.readAsArrayBuffer(file);
-
-            } catch (err) {
-                console.error('Error reading file:', err);
-                showNotification(`❌ Gagal membaca file: ${err.message}`, 'error');
-            } finally {
-                extractBtn.disabled = false;
-                extractBtn.innerHTML = '<i class="fas fa-file-upload mr-2"></i>Ekstrak & Kirim ke Firebase';
-            }
-        });
-
-        async function saveTextToFirestore(title, content) {
-            try {
-                const docRef = await addDoc(collection(db, "extracted_content"), {
-                    title: title,
-                    content: content,
-                    createdAt: serverTimestamp()
-                });
-                showNotification(`✅ Berhasil dikirim ke Firebase dengan ID: ${docRef.id}`, 'success');
-            } catch (e) {
-                console.error("Error adding document: ", e);
-                showNotification(`❌ Gagal mengirim ke Firebase: ${e.message}`, 'error');
-            }
-        }
-
-        // Re-using the existing notification function
-        function showNotification(message, type = 'success') {
-            const notification = document.getElementById('notification');
-            const notificationText = document.getElementById('notificationText');
-            notificationText.textContent = message;
-            
-            notification.className = `fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg transform transition-transform duration-300 z-50`;
-            
-            if (type === 'success') {
-                notification.classList.add('bg-gray-500', 'text-white');
-            } else {
-                notification.classList.add('bg-gray-500', 'text-white');
-            }
-            
-            notification.classList.remove('translate-x-full');
-            setTimeout(() => {
-                notification.classList.add('translate-x-full');
-            }, 5000); // Increased timeout for longer messages
-        }
-
-    </script>
-</body>
-</html>
