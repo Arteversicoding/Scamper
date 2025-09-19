@@ -25,13 +25,11 @@ const safetySettings = [
 /**
  * Fungsi utama untuk berinteraksi dengan AI.
  * @param {string} prompt - Teks input terbaru dari pengguna.
- * @param {Array} history - Riwayat percakapan sebelumnya.
  * @returns {Promise<string>} - Respons teks dari AI.
  */
-export async function getChatResponse(prompt, history = []) {
+export async function getChatResponse(prompt) {
   try {
     const chat = await model.startChat({
-      history: history,
       generationConfig,
       safetySettings,
     });
@@ -56,10 +54,9 @@ export async function getChatResponse(prompt, history = []) {
  * Menghasilkan respons dari AI dengan konteks tambahan dari file/materi.
  * @param {string} context - Teks dari materi yang diunggah.
  * @param {string} question - Pertanyaan pengguna terkait materi.
- * @param {Array} history - Riwayat percakapan sebelumnya.
  * @returns {Promise<string>} - Respons teks dari AI.
  */
-export async function getResponseWithContext(context, question, history = []) {
+export async function getResponseWithContext(context, question) {
   const fullPrompt = `
     Berdasarkan materi berikut:
     --- MATERI ---
@@ -68,5 +65,5 @@ export async function getResponseWithContext(context, question, history = []) {
 
     Jawab pertanyaan ini: ${question}
   `;
-  return await getChatResponse(fullPrompt, history);
+  return await getChatResponse(fullPrompt);
 }

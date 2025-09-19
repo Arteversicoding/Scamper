@@ -152,7 +152,7 @@
         authService.waitForAuthInit().then(user => {
             if (user) {
                 if (user.role === 'admin') {
-                    window.location.href = '/pages/admin/admin-dashboard.html';
+                    window.location.href = '../admin/admin-dashboard.html';
                 } else {
                     window.location.href = '/pages/home.html';
                 }

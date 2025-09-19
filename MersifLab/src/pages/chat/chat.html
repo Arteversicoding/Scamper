@@ -78,6 +78,8 @@
         }
     </style>
     <script type="module" src="/js/services/auth-guard.js"></script>
+    <!-- DOCX generation library -->
+    <script src="https://unpkg.com/html-docx-js/dist/html-docx.js"></script>
 </head>
 <body class="min-h-screen bg-gradient-to-br from-gray-50 via-gray-100 to-gray-200">
 
@@ -118,9 +120,7 @@
         <!-- Chat Input Area - Fixed above bottom nav -->
         <div class="fixed bottom-20 left-0 right-0 p-3 md:p-4 bg-white/95 backdrop-blur-sm border-t border-gray-200 z-40 shadow-lg">
             <div class="flex items-center space-x-2 md:space-x-3 max-w-6xl mx-auto">
-                <button id="chat-history-button" class="p-3 md:p-4 rounded-2xl text-gray-500 hover:bg-gray-200 transition-all duration-200 flex-shrink-0">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v-6M12 14V4M6 14H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2M18 14h2a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2"/></svg>
-                </button>
+
                 <div class="flex-1 relative">
                     <input type="text" id="chatInput" placeholder="Masukkan topik pembelajaran..." class="w-full p-3 md:p-4 pr-12 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-cyan-500 bg-white shadow-sm text-sm md:text-base transition-all duration-200">
                     <button id="file-upload-button" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-cyan-600 transition-colors p-1 rounded-lg hover:bg-gray-100">

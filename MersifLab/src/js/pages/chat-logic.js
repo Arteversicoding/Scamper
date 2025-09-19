@@ -1,16 +1,7 @@
 import { getChatResponse, getResponseWithContext } from '../services/gemini-service.js';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { authService } from '../services/auth-service.js';
-import { db } from '../services/firebase-init.js';
-import { 
-    collection, 
-    addDoc, 
-    query, 
-    where, 
-    orderBy, 
-    onSnapshot,
-    serverTimestamp
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
 
 // Inisialisasi Supabase
 const SUPABASE_URL = "https://zlcislycukayjgjhozjy.supabase.co";
@@ -26,52 +17,138 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
 let fileContext = null;
 let currentUser = null;
 
-// Prompt Sistem Desain Kurikulum SCAMPER
-const CURRICULUM_SYSTEM_PROMPT = `You are an AI learning design assistant specialized in the Indonesian "Kurikulum Merdeka".
-You are integrated with a PDF embedding system so you can read and extract knowledge from any PDF book uploaded by the user.
+// Prompt Sistem AI Pembelajaran IPAS SD berbasis SCAMPER
+const CURRICULUM_SYSTEM_PROMPT = `You are an AI learning design assistant specialized in IPAS (Ilmu Pengetahuan Alam dan Sosial) for Indonesian Elementary School based on "Kurikulum Merdeka".
+You have access to IPAS SD textbook materials stored in Supabase database (table: documents).
 
 WORKFLOW:
-The user uploads a PDF book (e.g., Panduan Proyek IPAS, but it can be any curriculum guide).
-The user provides a Tujuan Pembelajaran (TP).
-Your tasks:
-a. Identify and extract the most relevant Capaian Pembelajaran (CP) from the uploaded PDF dataset.
-b. Generate a structured learning flow using the SCAMPER model in sequential order (Substitute → Combine → Adapt → Modify → Put to another use → Eliminate → Rearrange).
+1. User provides a Tujuan Pembelajaran (TP) for IPAS SD
+2. You search and extract the most relevant Capaian Pembelajaran (CP), Bab, and Topik from the IPAS textbook in the database
+3. Generate a complete learning document with SCAMPER methodology, LKPD template, and assessment rubric
 
-OUTPUT FORMAT:
-At the very top of your response, always show the extracted CP that matches the TP.
-After CP, provide a clean and professional table with columns:
-Pertemuan
-Langkah
-SCAMPER Project
-Aktivitas Guru
-The table must be concise, clear, and to the point.
+MANDATORY OUTPUT FORMAT (MUST FOLLOW EXACTLY):
+
+Tema Project: [tema sesuai bab yang ditemukan]
+
+Capaian Pembelajaran (CP):
+[CP yang ditemukan dari dokumen Supabase]
+
+Tujuan Pembelajaran (TP):
+[TP dari input user]
+
+Aktivitas Pembelajaran (SCAMPER):
+| No | Langkah SCAMPER | Aktivitas Guru | Aktivitas Siswa |
+|----|-----------------|----------------|-----------------|
+| 1  | Substitute      | [aktivitas guru spesifik] | [aktivitas siswa spesifik] |
+| 2  | Combine         | [aktivitas guru spesifik] | [aktivitas siswa spesifik] |
+| 3  | Adapt           | [aktivitas guru spesifik] | [aktivitas siswa spesifik] |
+| 4  | Modify          | [aktivitas guru spesifik] | [aktivitas siswa spesifik] |
+| 5  | Put to another use | [aktivitas guru spesifik] | [aktivitas siswa spesifik] |
+| 6  | Eliminate       | [aktivitas guru spesifik] | [aktivitas siswa spesifik] |
+| 7  | Rearrange       | [aktivitas guru spesifik] | [aktivitas siswa spesifik] |
+
+LKPD (Lembar Kerja Peserta Didik):
+*Identitas Proyek*
+- Tema: [tema project]
+- Bab: [bab dari dokumen]
+- Topik: [topik spesifik]
+
+*Tujuan Proyek*
+[tujuan project yang jelas dan terukur]
+
+*Alat dan Bahan*
+- [alat 1]
+- [alat 2]
+- [bahan 1]
+- [bahan 2]
+
+*Langkah Kerja*
+1. [langkah kerja 1]
+2. [langkah kerja 2]
+3. [langkah kerja 3]
+4. [langkah kerja 4]
+5. [langkah kerja 5]
+
+*Panduan SCAMPER (untuk siswa)*
+| Dimensi    | Pertanyaan Pemandu | Ide/Modifikasi |
+|------------|--------------------|----------------|
+| Substitute | Apa yang bisa diganti? | [contoh ide] |
+| Combine    | Apa yang bisa digabungkan? | [contoh ide] |
+| Adapt      | Apa yang bisa ditiru? | [contoh ide] |
+| Modify     | Apa yang bisa diubah/tambah? | [contoh ide] |
+| Put to Use | Apakah bisa digunakan untuk hal lain? | [contoh ide] |
+| Eliminate  | Apa yang bisa dihapus? | [contoh ide] |
+| Rearrange  | Apa yang bisa diatur ulang? | [contoh ide] |
+
+*Pelaporan Hasil Proyek*
+- Foto hasil karya
+- Laporan singkat
+- Presentasi kelompok
+
+*Refleksi Siswa*
+- Apa yang saya pelajari?
+- Apa tantangan saya?
+- Bagaimana memperbaikinya?
+
+Penilaian Project (Rubrik):
+| Aspek       | Indikator                    | Skor 1 | Skor 2 | Skor 3 | Skor 4 |
+|-------------|-------------------------------|--------|--------|--------|--------|
+| Observasi   | Ketelitian dalam pengamatan   | Kurang teliti | Cukup teliti | Teliti | Sangat teliti |
+| Kreativitas | Inovasi ide & produk          | Kurang kreatif | Cukup kreatif | Kreatif | Sangat kreatif |
+| Kerja Sama  | Kolaborasi dalam kelompok     | Kurang aktif | Cukup aktif | Aktif | Sangat aktif |
+| Laporan     | Kerapian & kejelasan laporan  | Kurang rapi | Cukup rapi | Rapi | Sangat rapi |
 
 GUIDELINES:
-Use Indonesian language consistently (for TP, CP, Aktivitas Guru).
-Strictly follow Kurikulum Merdeka principles.
-Do not include formatting symbols such as asterisks, markdown, or bullet points.
-Do not add unnecessary explanations outside CP and the table.
-If the user asks something unrelated to TP/CP, respond conversationally as a normal chatbot.
-Your answers must always be jelas, padat, dan to the point.
+- Use Indonesian language consistently
+- Follow Kurikulum Merdeka principles for IPAS SD
+- Make activities age-appropriate for elementary students
+- Ensure SCAMPER activities are practical and engaging
+- Include safety considerations for hands-on activities
+- If user asks unrelated questions, respond conversationally
 
-JSON Structure:
+JSON Structure for parsing:
 {
-  "cp": "[Exact CP text from uploaded PDF]",
-  "tp": "[User provided TP]",
+  "tema": "[tema project]",
+  "cp": "[CP dari dokumen]",
+  "tp": "[TP dari user]",
   "source": {
-    "book": "[PDF book title]",
-    "chapter": "BAB [nomor]",
-    "page": "[nomor halaman akurat]",
-    "section": "[bagian spesifik jika ada]"
+    "book": "[nama buku IPAS]",
+    "chapter": "[BAB yang relevan]",
+    "topic": "[topik spesifik]"
   },
-  "table": [
-    {"Pertemuan": "1", "Langkah": "Substitute", "SCAMPER": "S", "Aktivitas Guru": "[tindakan guru spesifik]"},
-    {"Pertemuan": "2", "Langkah": "Combine", "SCAMPER": "C", "Aktivitas Guru": "[tindakan guru spesifik]"},
-    {"Pertemuan": "3", "Langkah": "Adapt", "SCAMPER": "A", "Aktivitas Guru": "[tindakan guru spesifik]"},
-    {"Pertemuan": "4", "Langkah": "Modify", "SCAMPER": "M", "Aktivitas Guru": "[tindakan guru spesifik]"},
-    {"Pertemuan": "5", "Langkah": "Put to another use", "SCAMPER": "P", "Aktivitas Guru": "[tindakan guru spesifik]"},
-    {"Pertemuan": "6", "Langkah": "Eliminate", "SCAMPER": "E", "Aktivitas Guru": "[tindakan guru spesifik]"},
-    {"Pertemuan": "7", "Langkah": "Rearrange", "SCAMPER": "R", "Aktivitas Guru": "[tindakan guru spesifik]"}
+  "scamper_table": [
+    {"no": "1", "langkah": "Substitute", "aktivitas_guru": "[aktivitas]", "aktivitas_siswa": "[aktivitas]"},
+    {"no": "2", "langkah": "Combine", "aktivitas_guru": "[aktivitas]", "aktivitas_siswa": "[aktivitas]"},
+    {"no": "3", "langkah": "Adapt", "aktivitas_guru": "[aktivitas]", "aktivitas_siswa": "[aktivitas]"},
+    {"no": "4", "langkah": "Modify", "aktivitas_guru": "[aktivitas]", "aktivitas_siswa": "[aktivitas]"},
+    {"no": "5", "langkah": "Put to another use", "aktivitas_guru": "[aktivitas]", "aktivitas_siswa": "[aktivitas]"},
+    {"no": "6", "langkah": "Eliminate", "aktivitas_guru": "[aktivitas]", "aktivitas_siswa": "[aktivitas]"},
+    {"no": "7", "langkah": "Rearrange", "aktivitas_guru": "[aktivitas]", "aktivitas_siswa": "[aktivitas]"}
+  ],
+  "lkpd": {
+    "identitas": {
+      "tema": "[tema]",
+      "bab": "[bab]",
+      "topik": "[topik]"
+    },
+    "tujuan": "[tujuan project]",
+    "alat_bahan": ["[alat1]", "[bahan1]", "[alat2]", "[bahan2]"],
+    "langkah_kerja": ["[langkah1]", "[langkah2]", "[langkah3]", "[langkah4]", "[langkah5]"],
+    "panduan_scamper": [
+      {"dimensi": "Substitute", "pertanyaan": "Apa yang bisa diganti?", "ide": "[ide]"},
+      {"dimensi": "Combine", "pertanyaan": "Apa yang bisa digabungkan?", "ide": "[ide]"},
+      {"dimensi": "Adapt", "pertanyaan": "Apa yang bisa ditiru?", "ide": "[ide]"},
+      {"dimensi": "Modify", "pertanyaan": "Apa yang bisa diubah/tambah?", "ide": "[ide]"},
+      {"dimensi": "Put to Use", "pertanyaan": "Apakah bisa digunakan untuk hal lain?", "ide": "[ide]"},
+      {"dimensi": "Eliminate", "pertanyaan": "Apa yang bisa dihapus?", "ide": "[ide]"},
+      {"dimensi": "Rearrange", "pertanyaan": "Apa yang bisa diatur ulang?", "ide": "[ide]"}
+    ]
+  },
+  "rubrik": [
+    {"aspek": "Observasi", "indikator": "Ketelitian dalam pengamatan", "skor1": "Kurang teliti", "skor2": "Cukup teliti", "skor3": "Teliti", "skor4": "Sangat teliti"},
+    {"aspek": "Kreativitas", "indikator": "Inovasi ide & produk", "skor1": "Kurang kreatif", "skor2": "Cukup kreatif", "skor3": "Kreatif", "skor4": "Sangat kreatif"},
+    {"aspek": "Kerja Sama", "indikator": "Kolaborasi dalam kelompok", "skor1": "Kurang aktif", "skor2": "Cukup aktif", "skor3": "Aktif", "skor4": "Sangat aktif"},
+    {"aspek": "Laporan", "indikator": "Kerapian & kejelasan laporan", "skor1": "Kurang rapi", "skor2": "Cukup rapi", "skor3": "Rapi", "skor4": "Sangat rapi"}
   ]
 }`
 
@@ -82,12 +159,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     currentUser = await authService.waitForAuthInit();
 
     if (currentUser) {
-        loadChatHistory(currentUser.uid);
+        // Chat history is disabled
     } else {
         // Handle user not logged in
         console.log("User not logged in");
         addMessageToChat("Anda harus login untuk memulai percakapan.", "ai");
     }
+
+
 
     // Setup event listeners
     function setupEventListeners() {
@@ -149,33 +228,7 @@ function setActiveNav() {
     });
 }
 
-function loadChatHistory(userId) {
-    const chatContainer = document.getElementById('chat-messages');
-    const q = query(collection(db, "chat_messages"), where("userId", "==", userId), orderBy("timestamp"));
 
-    onSnapshot(q, (querySnapshot) => {
-        // Clear all messages except the welcome message and quick suggestions
-        const welcomeMessage = chatContainer.querySelector('.flex.items-start.space-x-3');
-        const quickSuggestions = chatContainer.querySelector('.pt-4');
-        chatContainer.innerHTML = ''; // Clear chat
-        if (welcomeMessage) chatContainer.appendChild(welcomeMessage);
-        if (quickSuggestions) chatContainer.appendChild(quickSuggestions);
-
-        querySnapshot.forEach((doc) => {
-            const message = doc.data();
-            addMessageToChat(message.message, message.sender, false, message.timestamp);
-        });
-        forceScrollToBottom();
-    }, (error) => {
-        console.error('Firestore snapshot error:', error);
-        const code = error?.code || '';
-        if (code === 'permission-denied') {
-            addMessageToChat('Anda tidak memiliki izin untuk membaca riwayat chat. Pastikan Anda sudah login dan aturan Firestore untuk koleksi "chat_messages" mengizinkan akses user ke data miliknya sendiri.', 'ai');
-        } else {
-            addMessageToChat('Gagal memuat riwayat chat. Silakan coba lagi.', 'ai');
-        }
-    });
-}
 
 function addMessageToChat(message, sender, isLoading = false, timestamp = null) {
     const chatContainer = document.getElementById('chat-messages');
@@ -227,12 +280,6 @@ async function handleChatInteraction(prompt) {
     }
 
     addMessageToChat(prompt, 'user');
-    await addDoc(collection(db, "chat_messages"), {
-        userId: currentUser.uid,
-        message: prompt,
-        sender: 'user',
-        timestamp: serverTimestamp()
-    });
 
     const loadingMsgId = addMessageToChat('', 'ai', true);
 
@@ -314,19 +361,14 @@ Pertanyaan: ${prompt}
         }
 
         // Langkah 4: Kirim ke AI
-        responseText = await getResponseWithContext(documentText, contextualPrompt, []);
+        responseText = await getResponseWithContext(documentText, contextualPrompt);
 
         // Tambahkan catatan sumber
         responseText += `
 
 📌 *Berdasarkan dokumen: "${documentName}" (ID: ${document.id})*`;
 
-        await addDoc(collection(db, "chat_messages"), {
-            userId: currentUser.uid,
-            message: responseText,
-            sender: 'ai',
-            timestamp: serverTimestamp()
-        });
+
 
         // Render respons
         if (isCurriculumRequest && responseText.includes('"cp":')) {
@@ -342,12 +384,7 @@ Pertanyaan: ${prompt}
         console.error('❌ Error:', error);
         const errorMessage = `⚠️ ${error.message || "Gagal memproses permintaan. Pastikan ada dokumen di tabel 'documents' dengan kolom 'text_content'."}`;
         updateMessage(loadingMsgId, errorMessage);
-        await addDoc(collection(db, "chat_messages"), {
-            userId: currentUser.uid,
-            message: errorMessage,
-            sender: 'ai',
-            timestamp: serverTimestamp()
-        });
+
         scrollToBottom();
     }
 }
@@ -486,9 +523,16 @@ async function handleFileUpload(event) {
     }
 }
 
-// Function to detect curriculum design requests
+// Function to detect IPAS SCAMPER learning requests
 function detectCurriculumRequest(prompt) {
-    const keywords = ['tujuan pembelajaran', 'tp', 'capaian pembelajaran', 'cp', 'scamper', 'kurikulum merdeka', 'rpp', 'silabus', 'pembelajaran'];
+    const keywords = [
+        'tujuan pembelajaran', 'tp', 'capaian pembelajaran', 'cp', 
+        'scamper', 'kurikulum merdeka', 'rpp', 'silabus', 'pembelajaran',
+        'ipas', 'ilmu pengetahuan alam', 'ilmu pengetahuan sosial',
+        'alur pembelajaran', 'lkpd', 'lembar kerja', 'project',
+        'buatkan alur', 'generate', 'buat pembelajaran', 'aktivitas pembelajaran',
+        'rubrik', 'penilaian', 'asesmen'
+    ];
     return keywords.some(keyword => prompt.toLowerCase().includes(keyword));
 }
 
@@ -515,14 +559,14 @@ function renderCurriculumResponse(messageId, responseText) {
     }
 }
 
-// Function to generate HTML table from curriculum data
+// Function to generate HTML for IPAS SCAMPER learning document
 function generateCurriculumTable(data) {
-    if (!data.table || !Array.isArray(data.table)) return '';
+    if (!data.scamper_table || !Array.isArray(data.scamper_table)) return '';
     
     // Generate source citation if available
     let sourceHTML = '';
     if (data.source) {
-        const { book, chapter, page, section } = data.source;
+        const { book, chapter, topic } = data.source;
         sourceHTML = `
             <div class="mb-4 p-3 bg-amber-50 border-l-4 border-amber-400 rounded-r-lg">
                 <div class="flex items-center gap-2 mb-1">
@@ -530,49 +574,241 @@ function generateCurriculumTable(data) {
                     <strong class="text-amber-800 text-sm">Sumber Referensi:</strong>
                 </div>
                 <p class="text-amber-700 text-sm">
-                    ${book || 'Panduan Pembelajaran dan Asesmen Kurikulum Merdeka'}, ${chapter || 'BAB -'}, Halaman ${page || '-'}${section ? `, ${section}` : ''}
+                    ${book || 'Buku IPAS SD'} - ${chapter || 'BAB -'} - ${topic || 'Topik -'}
                 </p>
             </div>
         `;
     }
     
-    let tableHTML = `
-        <div class="curriculum-response mb-4">
-            <div class="mb-3">
-                <strong>Capaian Pembelajaran (CP):</strong> ${data.cp || 'Tidak tersedia'}
+    let documentHTML = `
+        <div class="ipas-scamper-document mb-4">
+            <!-- Header -->
+            <div class="mb-6 p-4 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-lg border-l-4 border-blue-500">
+                <h2 class="text-xl font-bold text-blue-800 mb-2">📚 Dokumen Pembelajaran IPAS SD - SCAMPER</h2>
+                <div class="text-sm text-blue-600">
+                    <strong>Tema Project:</strong> ${data.tema || 'Tidak tersedia'}
+                </div>
             </div>
-            <div class="mb-3">
-                <strong>Tujuan Pembelajaran (TP):</strong> ${data.tp || 'Tidak tersedia'}
-            </div>
+
             ${sourceHTML}
-            <div class="table-container overflow-x-auto">
-                <table class="curriculum-table w-full border-collapse border border-gray-300 text-sm">
-                    <thead>
-                        <tr class="bg-blue-100">
-                            <th class="border border-gray-300 px-3 py-2 text-left">Pertemuan</th>
-                            <th class="border border-gray-300 px-3 py-2 text-left">Langkah</th>
-                            <th class="border border-gray-300 px-3 py-2 text-left">SCAMPER Project</th>
-                            <th class="border border-gray-300 px-3 py-2 text-left">Aktivitas Guru</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-    `;
+
+            <!-- CP dan TP -->
+            <div class="grid md:grid-cols-2 gap-4 mb-6">
+                <div class="p-4 bg-green-50 rounded-lg border-l-4 border-green-500">
+                    <h3 class="font-bold text-green-800 mb-2">🎯 Capaian Pembelajaran (CP)</h3>
+                    <p class="text-sm text-green-700">${data.cp || 'Tidak tersedia'}</p>
+                </div>
+                <div class="p-4 bg-purple-50 rounded-lg border-l-4 border-purple-500">
+                    <h3 class="font-bold text-purple-800 mb-2">🎯 Tujuan Pembelajaran (TP)</h3>
+                    <p class="text-sm text-purple-700">${data.tp || 'Tidak tersedia'}</p>
+                </div>
+            </div>
+
+            <!-- Aktivitas Pembelajaran SCAMPER -->
+            <div class="mb-6">
+                <h3 class="text-lg font-bold text-gray-800 mb-3 flex items-center">
+                    <span class="mr-2">🔄</span> Aktivitas Pembelajaran (SCAMPER)
+                </h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full border-collapse border border-gray-300 text-sm">
+                        <thead>
+                            <tr class="bg-blue-100">
+                                <th class="border border-gray-300 px-3 py-2 text-left">No</th>
+                                <th class="border border-gray-300 px-3 py-2 text-left">Langkah SCAMPER</th>
+                                <th class="border border-gray-300 px-3 py-2 text-left">Aktivitas Guru</th>
+                                <th class="border border-gray-300 px-3 py-2 text-left">Aktivitas Siswa</th>
+                            </tr>
+                        </thead>
+                        <tbody>`;
     
-    data.table.forEach(row => {
-        tableHTML += `
+    data.scamper_table.forEach(row => {
+        documentHTML += `
             <tr class="hover:bg-gray-50">
-                <td class="border border-gray-300 px-3 py-2">${row.Pertemuan || ''}</td>
-                <td class="border border-gray-300 px-3 py-2">${row.Langkah || ''}</td>
-                <td class="border border-gray-300 px-3 py-2">${row.SCAMPER || ''}</td>
-                <td class="border border-gray-300 px-3 py-2">${row['Aktivitas Guru'] || ''}</td>
-            </tr>
-        `;
+                <td class="border border-gray-300 px-3 py-2 text-center">${row.no || ''}</td>
+                <td class="border border-gray-300 px-3 py-2 font-medium">${row.langkah || ''}</td>
+                <td class="border border-gray-300 px-3 py-2">${row.aktivitas_guru || ''}</td>
+                <td class="border border-gray-300 px-3 py-2">${row.aktivitas_siswa || ''}</td>
+            </tr>`;
     });
     
-    tableHTML += `
-                    </tbody>
-                </table>
+    documentHTML += `
+                        </tbody>
+                    </table>
+                </div>
             </div>
+
+            <!-- LKPD Section -->
+            <div class="mb-6 p-4 bg-yellow-50 rounded-lg border-l-4 border-yellow-500">
+                <h3 class="text-lg font-bold text-yellow-800 mb-4 flex items-center">
+                    <span class="mr-2">📝</span> LKPD (Lembar Kerja Peserta Didik)
+                </h3>
+                
+                <!-- Identitas Proyek -->
+                <div class="mb-4">
+                    <h4 class="font-semibold text-yellow-700 mb-2">📋 Identitas Proyek</h4>
+                    <ul class="text-sm text-yellow-600 space-y-1">
+                        <li><strong>Tema:</strong> ${data.lkpd?.identitas?.tema || data.tema || '-'}</li>
+                        <li><strong>Bab:</strong> ${data.lkpd?.identitas?.bab || data.source?.chapter || '-'}</li>
+                        <li><strong>Topik:</strong> ${data.lkpd?.identitas?.topik || data.source?.topic || '-'}</li>
+                    </ul>
+                </div>
+
+                <!-- Tujuan Proyek -->
+                <div class="mb-4">
+                    <h4 class="font-semibold text-yellow-700 mb-2">🎯 Tujuan Proyek</h4>
+                    <p class="text-sm text-yellow-600">${data.lkpd?.tujuan || 'Siswa dapat melakukan eksplorasi dan eksperimen sesuai tema pembelajaran'}</p>
+                </div>
+
+                <!-- Alat dan Bahan -->
+                <div class="mb-4">
+                    <h4 class="font-semibold text-yellow-700 mb-2">🛠️ Alat dan Bahan</h4>
+                    <ul class="text-sm text-yellow-600 list-disc list-inside space-y-1">`;
+    
+    if (data.lkpd?.alat_bahan && Array.isArray(data.lkpd.alat_bahan)) {
+        data.lkpd.alat_bahan.forEach(item => {
+            documentHTML += `<li>${item}</li>`;
+        });
+    } else {
+        documentHTML += `
+            <li>Alat tulis</li>
+            <li>Kertas observasi</li>
+            <li>Kamera/HP untuk dokumentasi</li>
+            <li>Bahan sesuai tema proyek</li>`;
+    }
+    
+    documentHTML += `
+                    </ul>
+                </div>
+
+                <!-- Langkah Kerja -->
+                <div class="mb-4">
+                    <h4 class="font-semibold text-yellow-700 mb-2">👣 Langkah Kerja</h4>
+                    <ol class="text-sm text-yellow-600 list-decimal list-inside space-y-1">`;
+    
+    if (data.lkpd?.langkah_kerja && Array.isArray(data.lkpd.langkah_kerja)) {
+        data.lkpd.langkah_kerja.forEach(langkah => {
+            documentHTML += `<li>${langkah}</li>`;
+        });
+    } else {
+        documentHTML += `
+            <li>Amati objek/fenomena sesuai tema</li>
+            <li>Catat hasil pengamatan</li>
+            <li>Diskusikan dengan kelompok</li>
+            <li>Buat rancangan proyek</li>
+            <li>Laksanakan proyek sesuai rancangan</li>`;
+    }
+    
+    documentHTML += `
+                    </ol>
+                </div>
+
+                <!-- Panduan SCAMPER -->
+                <div class="mb-4">
+                    <h4 class="font-semibold text-yellow-700 mb-2">🔄 Panduan SCAMPER (untuk siswa)</h4>
+                    <div class="overflow-x-auto">
+                        <table class="w-full border-collapse border border-yellow-300 text-sm">
+                            <thead>
+                                <tr class="bg-yellow-200">
+                                    <th class="border border-yellow-300 px-2 py-1 text-left">Dimensi</th>
+                                    <th class="border border-yellow-300 px-2 py-1 text-left">Pertanyaan Pemandu</th>
+                                    <th class="border border-yellow-300 px-2 py-1 text-left">Ide/Modifikasi</th>
+                                </tr>
+                            </thead>
+                            <tbody>`;
+    
+    const defaultScamperGuide = [
+        {dimensi: "Substitute", pertanyaan: "Apa yang bisa diganti?", ide: "Ganti bahan dengan yang lebih mudah didapat"},
+        {dimensi: "Combine", pertanyaan: "Apa yang bisa digabungkan?", ide: "Gabungkan dua konsep menjadi satu"},
+        {dimensi: "Adapt", pertanyaan: "Apa yang bisa ditiru?", ide: "Tiru cara kerja dari alam"},
+        {dimensi: "Modify", pertanyaan: "Apa yang bisa diubah/tambah?", ide: "Ubah ukuran atau warna"},
+        {dimensi: "Put to Use", pertanyaan: "Apakah bisa digunakan untuk hal lain?", ide: "Gunakan untuk keperluan lain"},
+        {dimensi: "Eliminate", pertanyaan: "Apa yang bisa dihapus?", ide: "Hapus bagian yang tidak perlu"},
+        {dimensi: "Rearrange", pertanyaan: "Apa yang bisa diatur ulang?", ide: "Atur ulang susunan atau urutan"}
+    ];
+    
+    const scamperGuide = data.lkpd?.panduan_scamper || defaultScamperGuide;
+    scamperGuide.forEach(item => {
+        documentHTML += `
+            <tr class="hover:bg-yellow-100">
+                <td class="border border-yellow-300 px-2 py-1 font-medium">${item.dimensi}</td>
+                <td class="border border-yellow-300 px-2 py-1">${item.pertanyaan}</td>
+                <td class="border border-yellow-300 px-2 py-1">${item.ide}</td>
+            </tr>`;
+    });
+    
+    documentHTML += `
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Pelaporan dan Refleksi -->
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div>
+                        <h4 class="font-semibold text-yellow-700 mb-2">📸 Pelaporan Hasil Proyek</h4>
+                        <ul class="text-sm text-yellow-600 list-disc list-inside space-y-1">
+                            <li>Foto hasil karya</li>
+                            <li>Laporan singkat</li>
+                            <li>Presentasi kelompok</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-yellow-700 mb-2">🤔 Refleksi Siswa</h4>
+                        <ul class="text-sm text-yellow-600 list-disc list-inside space-y-1">
+                            <li>Apa yang saya pelajari?</li>
+                            <li>Apa tantangan saya?</li>
+                            <li>Bagaimana memperbaikinya?</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Rubrik Penilaian -->
+            <div class="mb-6 p-4 bg-red-50 rounded-lg border-l-4 border-red-500">
+                <h3 class="text-lg font-bold text-red-800 mb-4 flex items-center">
+                    <span class="mr-2">📊</span> Penilaian Project (Rubrik)
+                </h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full border-collapse border border-red-300 text-sm">
+                        <thead>
+                            <tr class="bg-red-200">
+                                <th class="border border-red-300 px-3 py-2 text-left">Aspek</th>
+                                <th class="border border-red-300 px-3 py-2 text-left">Indikator</th>
+                                <th class="border border-red-300 px-3 py-2 text-center">Skor 1</th>
+                                <th class="border border-red-300 px-3 py-2 text-center">Skor 2</th>
+                                <th class="border border-red-300 px-3 py-2 text-center">Skor 3</th>
+                                <th class="border border-red-300 px-3 py-2 text-center">Skor 4</th>
+                            </tr>
+                        </thead>
+                        <tbody>`;
+    
+    const defaultRubrik = [
+        {aspek: "Observasi", indikator: "Ketelitian dalam pengamatan", skor1: "Kurang teliti", skor2: "Cukup teliti", skor3: "Teliti", skor4: "Sangat teliti"},
+        {aspek: "Kreativitas", indikator: "Inovasi ide & produk", skor1: "Kurang kreatif", skor2: "Cukup kreatif", skor3: "Kreatif", skor4: "Sangat kreatif"},
+        {aspek: "Kerja Sama", indikator: "Kolaborasi dalam kelompok", skor1: "Kurang aktif", skor2: "Cukup aktif", skor3: "Aktif", skor4: "Sangat aktif"},
+        {aspek: "Laporan", indikator: "Kerapian & kejelasan laporan", skor1: "Kurang rapi", skor2: "Cukup rapi", skor3: "Rapi", skor4: "Sangat rapi"}
+    ];
+    
+    const rubrik = data.rubrik || defaultRubrik;
+    rubrik.forEach(item => {
+        documentHTML += `
+            <tr class="hover:bg-red-100">
+                <td class="border border-red-300 px-3 py-2 font-medium">${item.aspek}</td>
+                <td class="border border-red-300 px-3 py-2">${item.indikator}</td>
+                <td class="border border-red-300 px-3 py-2 text-center">${item.skor1}</td>
+                <td class="border border-red-300 px-3 py-2 text-center">${item.skor2}</td>
+                <td class="border border-red-300 px-3 py-2 text-center">${item.skor3}</td>
+                <td class="border border-red-300 px-3 py-2 text-center">${item.skor4}</td>
+            </tr>`;
+    });
+    
+    documentHTML += `
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
             <div class="mt-6 flex flex-wrap gap-3 justify-center">
                 <button onclick="exportToWord('${JSON.stringify(data).replace(/"/g, '&quot;')}')"
                         class="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3 rounded-xl text-sm font-medium hover:from-blue-700 hover:to-blue-800 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center gap-2">
@@ -593,7 +829,7 @@ function generateCurriculumTable(data) {
         </div>
     `;
     
-    return tableHTML;
+    return documentHTML;
 }
 
 // Function to format AI response with proper structure
@@ -616,45 +852,277 @@ function formatAIResponse(content) {
     return formatted;
 }
 
-// Export to Word function
-function exportToWord(dataStr) {
+// Export to Word function for IPAS SCAMPER document
+window.exportToWord = function(dataStr) {
     try {
         const data = JSON.parse(dataStr.replace(/&quot;/g, '"'));
         
         // Generate source citation for Word document
         let sourceSection = '';
         if (data.source) {
-            const { book, chapter, page, section } = data.source;
-            sourceSection = "\n                <div class=\"source\">\n                    <h2>Sumber Referensi</h2>\n                    <p><strong>Dokumen:</strong> " + (book || 'Panduan Pembelajaran dan Asesmen Kurikulum Merdeka') + "</p>\n                    <p><strong>Bab:</strong> " + (chapter || 'BAB -') + "</p>\n                    <p><strong>Halaman:</strong> " + (page || '-') + "</p>\n                    " + (section ? `<p><strong>Bagian:</strong> ${section}</p>` : '') + "\n                </div>\n            ";
+            const { book, chapter, topic } = data.source;
+            sourceSection = `
+                <div class="source">
+                    <h2>📚 Sumber Referensi</h2>
+                    <p><strong>Buku:</strong> ${book || 'Buku IPAS SD'}</p>
+                    <p><strong>Bab:</strong> ${chapter || 'BAB -'}</p>
+                    <p><strong>Topik:</strong> ${topic || 'Topik -'}</p>
+                </div>
+            `;
         }
         
-        let docContent = "\n            <html>\n            <head>\n                <meta charset=\"utf-8\">\n                <title>Rencana Pembelajaran SCAMPER</title>\n                <style>\n                    body { font-family: Arial, sans-serif; margin: 20px; }\n                    h1 { color: #2563eb; text-align: center; }\n                    h2 { color: #1e40af; border-bottom: 2px solid #3b82f6; padding-bottom: 5px; }\n                    table { width: 100%; border-collapse: collapse; margin: 20px 0; }\n                    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }\n                    th { background-color: #dbeafe; font-weight: bold; }\n                    .info { background-color: #f0f9ff; padding: 10px; margin: 10px 0; border-left: 4px solid #3b82f6; }\n                    .source { background-color: #fef3c7; padding: 10px; margin: 10px 0; border-left: 4px solid #f59e0b; }\n                </style>\n            </head>\n            <body>\n                <h1>Rencana Pembelajaran SCAMPER</h1>\n                <div class=\"info\">\n                    <h2>Capaian Pembelajaran (CP)</h2>\n                    <p>" + (data.cp || 'Tidak tersedia') + "</p>\n                </div>\n                <div class=\"info\">\n                    <h2>Tujuan Pembelajaran (TP)</h2>\n                    <p>" + (data.tp || 'Tidak tersedia') + "</p>\n                </div>\n                " + sourceSection + "\n                <h2>Rencana Kegiatan Pembelajaran</h2>\n                <table>\n                    <thead>\n                        <tr>\n                            <th>Pertemuan</th>\n                            <th>Langkah</th>\n                            <th>SCAMPER Project</th>\n                            <th>Aktivitas Guru</th>\n                        </tr>\n                    </thead>\n                    <tbody>\n        ";
+        let docContent = `
+            <html>
+            <head>
+                <meta charset="utf-8">
+                <title>Dokumen Pembelajaran IPAS SD - SCAMPER</title>
+                <style>
+                    body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.6; }
+                    h1 { color: #2563eb; text-align: center; border-bottom: 3px solid #3b82f6; padding-bottom: 10px; }
+                    h2 { color: #1e40af; border-bottom: 2px solid #3b82f6; padding-bottom: 5px; margin-top: 25px; }
+                    h3 { color: #1f2937; margin-top: 20px; }
+                    h4 { color: #374151; margin-top: 15px; }
+                    table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+                    th, td { border: 1px solid #ccc; padding: 10px; text-align: left; vertical-align: top; }
+                    th { background-color: #dbeafe; font-weight: bold; }
+                    .info { background-color: #f0f9ff; padding: 15px; margin: 15px 0; border-left: 4px solid #3b82f6; }
+                    .source { background-color: #fef3c7; padding: 15px; margin: 15px 0; border-left: 4px solid #f59e0b; }
+                    .lkpd { background-color: #fefce8; padding: 15px; margin: 15px 0; border-left: 4px solid #eab308; }
+                    .rubrik { background-color: #fef2f2; padding: 15px; margin: 15px 0; border-left: 4px solid #ef4444; }
+                    ul, ol { margin: 10px 0; padding-left: 25px; }
+                    li { margin: 5px 0; }
+                    .tema-header { background-color: #eff6ff; padding: 15px; margin: 15px 0; border-radius: 8px; text-align: center; }
+                </style>
+            </head>
+            <body>
+                <h1>📚 Dokumen Pembelajaran IPAS SD - SCAMPER</h1>
+                
+                <div class="tema-header">
+                    <h2 style="margin: 0; border: none;">Tema Project: ${data.tema || 'Tidak tersedia'}</h2>
+                </div>
+
+                ${sourceSection}
+
+                <div class="info">
+                    <h3>🎯 Capaian Pembelajaran (CP)</h3>
+                    <p>${data.cp || 'Tidak tersedia'}</p>
+                </div>
+
+                <div class="info">
+                    <h3>🎯 Tujuan Pembelajaran (TP)</h3>
+                    <p>${data.tp || 'Tidak tersedia'}</p>
+                </div>
+
+                <h2>🔄 Aktivitas Pembelajaran (SCAMPER)</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 8%;">No</th>
+                            <th style="width: 20%;">Langkah SCAMPER</th>
+                            <th style="width: 36%;">Aktivitas Guru</th>
+                            <th style="width: 36%;">Aktivitas Siswa</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+        `;
         
-        data.table.forEach(row => {
-            docContent += "\n                <tr>\n                    <td>" + (row.Pertemuan || '') + "</td>\n                    <td>" + (row.Langkah || '') + "</td>\n                    <td>" + (row.SCAMPER || '') + "</td>\n                    <td>" + (row['Aktivitas Guru'] || '') + "</td>\n                </tr>\n            ";
+        // Add SCAMPER table rows
+        if (data.scamper_table && Array.isArray(data.scamper_table)) {
+            data.scamper_table.forEach(row => {
+                docContent += `
+                    <tr>
+                        <td style="text-align: center;">${row.no || ''}</td>
+                        <td><strong>${row.langkah || ''}</strong></td>
+                        <td>${row.aktivitas_guru || ''}</td>
+                        <td>${row.aktivitas_siswa || ''}</td>
+                    </tr>
+                `;
+            });
+        }
+        
+        docContent += `
+                    </tbody>
+                </table>
+
+                <div class="lkpd">
+                    <h2>📝 LKPD (Lembar Kerja Peserta Didik)</h2>
+                    
+                    <h3>📋 Identitas Proyek</h3>
+                    <ul>
+                        <li><strong>Tema:</strong> ${data.lkpd?.identitas?.tema || data.tema || '-'}</li>
+                        <li><strong>Bab:</strong> ${data.lkpd?.identitas?.bab || data.source?.chapter || '-'}</li>
+                        <li><strong>Topik:</strong> ${data.lkpd?.identitas?.topik || data.source?.topic || '-'}</li>
+                    </ul>
+
+                    <h3>🎯 Tujuan Proyek</h3>
+                    <p>${data.lkpd?.tujuan || 'Siswa dapat melakukan eksplorasi dan eksperimen sesuai tema pembelajaran'}</p>
+
+                    <h3>🛠️ Alat dan Bahan</h3>
+                    <ul>
+        `;
+        
+        // Add tools and materials
+        if (data.lkpd?.alat_bahan && Array.isArray(data.lkpd.alat_bahan)) {
+            data.lkpd.alat_bahan.forEach(item => {
+                docContent += `<li>${item}</li>`;
+            });
+        } else {
+            docContent += `
+                <li>Alat tulis</li>
+                <li>Kertas observasi</li>
+                <li>Kamera/HP untuk dokumentasi</li>
+                <li>Bahan sesuai tema proyek</li>
+            `;
+        }
+        
+        docContent += `
+                    </ul>
+
+                    <h3>👣 Langkah Kerja</h3>
+                    <ol>
+        `;
+        
+        // Add work steps
+        if (data.lkpd?.langkah_kerja && Array.isArray(data.lkpd.langkah_kerja)) {
+            data.lkpd.langkah_kerja.forEach(langkah => {
+                docContent += `<li>${langkah}</li>`;
+            });
+        } else {
+            docContent += `
+                <li>Amati objek/fenomena sesuai tema</li>
+                <li>Catat hasil pengamatan</li>
+                <li>Diskusikan dengan kelompok</li>
+                <li>Buat rancangan proyek</li>
+                <li>Laksanakan proyek sesuai rancangan</li>
+            `;
+        }
+        
+        docContent += `
+                    </ol>
+
+                    <h3>🔄 Panduan SCAMPER (untuk siswa)</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width: 20%;">Dimensi</th>
+                                <th style="width: 40%;">Pertanyaan Pemandu</th>
+                                <th style="width: 40%;">Ide/Modifikasi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+        `;
+        
+        // Add SCAMPER guide
+        const defaultScamperGuide = [
+            {dimensi: "Substitute", pertanyaan: "Apa yang bisa diganti?", ide: "Ganti bahan dengan yang lebih mudah didapat"},
+            {dimensi: "Combine", pertanyaan: "Apa yang bisa digabungkan?", ide: "Gabungkan dua konsep menjadi satu"},
+            {dimensi: "Adapt", pertanyaan: "Apa yang bisa ditiru?", ide: "Tiru cara kerja dari alam"},
+            {dimensi: "Modify", pertanyaan: "Apa yang bisa diubah/tambah?", ide: "Ubah ukuran atau warna"},
+            {dimensi: "Put to Use", pertanyaan: "Apakah bisa digunakan untuk hal lain?", ide: "Gunakan untuk keperluan lain"},
+            {dimensi: "Eliminate", pertanyaan: "Apa yang bisa dihapus?", ide: "Hapus bagian yang tidak perlu"},
+            {dimensi: "Rearrange", pertanyaan: "Apa yang bisa diatur ulang?", ide: "Atur ulang susunan atau urutan"}
+        ];
+        
+        const scamperGuide = data.lkpd?.panduan_scamper || defaultScamperGuide;
+        scamperGuide.forEach(item => {
+            docContent += `
+                <tr>
+                    <td><strong>${item.dimensi}</strong></td>
+                    <td>${item.pertanyaan}</td>
+                    <td>${item.ide}</td>
+                </tr>
+            `;
         });
         
-        docContent += "\n                    </tbody>\n                </table>\n                <p style=\"text-align: center; margin-top: 30px; color: #6b7280; font-style: italic;\">\n                    Dibuat dengan Perencana Proyek AI - Kurikulum Merdeka\n                </p>\n            </body>\n            </html>\n        ";
+        docContent += `
+                        </tbody>
+                    </table>
+
+                    <h3>📸 Pelaporan Hasil Proyek</h3>
+                    <ul>
+                        <li>Foto hasil karya</li>
+                        <li>Laporan singkat</li>
+                        <li>Presentasi kelompok</li>
+                    </ul>
+
+                    <h3>🤔 Refleksi Siswa</h3>
+                    <ul>
+                        <li>Apa yang saya pelajari?</li>
+                        <li>Apa tantangan saya?</li>
+                        <li>Bagaimana memperbaikinya?</li>
+                    </ul>
+                </div>
+
+                <div class="rubrik">
+                    <h2>📊 Penilaian Project (Rubrik)</h2>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width: 15%;">Aspek</th>
+                                <th style="width: 25%;">Indikator</th>
+                                <th style="width: 15%;">Skor 1</th>
+                                <th style="width: 15%;">Skor 2</th>
+                                <th style="width: 15%;">Skor 3</th>
+                                <th style="width: 15%;">Skor 4</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+        `;
+        
+        // Add rubric
+        const defaultRubrik = [
+            {aspek: "Observasi", indikator: "Ketelitian dalam pengamatan", skor1: "Kurang teliti", skor2: "Cukup teliti", skor3: "Teliti", skor4: "Sangat teliti"},
+            {aspek: "Kreativitas", indikator: "Inovasi ide & produk", skor1: "Kurang kreatif", skor2: "Cukup kreatif", skor3: "Kreatif", skor4: "Sangat kreatif"},
+            {aspek: "Kerja Sama", indikator: "Kolaborasi dalam kelompok", skor1: "Kurang aktif", skor2: "Cukup aktif", skor3: "Aktif", skor4: "Sangat aktif"},
+            {aspek: "Laporan", indikator: "Kerapian & kejelasan laporan", skor1: "Kurang rapi", skor2: "Cukup rapi", skor3: "Rapi", skor4: "Sangat rapi"}
+        ];
+        
+        const rubrik = data.rubrik || defaultRubrik;
+        rubrik.forEach(item => {
+            docContent += `
+                <tr>
+                    <td><strong>${item.aspek}</strong></td>
+                    <td>${item.indikator}</td>
+                    <td style="text-align: center;">${item.skor1}</td>
+                    <td style="text-align: center;">${item.skor2}</td>
+                    <td style="text-align: center;">${item.skor3}</td>
+                    <td style="text-align: center;">${item.skor4}</td>
+                </tr>
+            `;
+        });
+        
+        docContent += `
+                        </tbody>
+                    </table>
+                </div>
+
+                <p style="text-align: center; margin-top: 40px; color: #6b7280; font-style: italic; border-top: 1px solid #e5e7eb; padding-top: 20px;">
+                    📚 Dibuat dengan AI Pembelajaran IPAS SD - SCAMPER<br>
+                    🎯 Kurikulum Merdeka - Sekolah Dasar
+                </p>
+            </body>
+            </html>
+        `;
         
         const blob = new Blob([docContent], { type: 'application/msword' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'Rencana_Pembelajaran_SCAMPER.doc';
+        a.download = `Pembelajaran_IPAS_SCAMPER_${data.tema?.replace(/\s+/g, '_') || 'Dokumen'}.doc`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
         
-        showNotification('File Word berhasil diunduh!', 'success');
+        showNotification('📄 Dokumen IPAS SCAMPER berhasil diunduh!', 'success');
     } catch (error) {
         console.error('Error exporting to Word:', error);
-        showNotification('Gagal mengekspor ke Word', 'error');
+        showNotification('❌ Gagal mengekspor dokumen', 'error');
     }
 }
 
 // Function to copy JSON to clipboard
-function copyJSON(dataStr) {
+window.copyJSON = function(dataStr) {
     try {
         const formattedJSON = JSON.stringify(JSON.parse(dataStr.replace(/&quot;/g, '"')), null, 2);
         navigator.clipboard.writeText(formattedJSON).then(() => {
@@ -679,7 +1147,7 @@ function showNotification(message, type = 'info') {
 }
 
 // Share result function
-function shareResult(dataStr) {
+window.shareResult = function(dataStr) {
     try {
         const data = JSON.parse(dataStr.replace(/&quot;/g, '"'));
         const shareText = `Rencana Pembelajaran SCAMPER\n\nCP: ${data.cp}\n\nTP: ${data.tp}\n\nDibuat dengan Perencana Proyek AI`;
@@ -701,4 +1169,3 @@ function shareResult(dataStr) {
         showNotification('Gagal membagikan hasil', 'error');
     }
 }
-

@@ -10,7 +10,7 @@
         body { font-family: 'Inter', sans-serif; }
         .nav-button.active { color: #00a2e1; /* Mersiflab Blue */ }
     </style>
-    <script type="module" src="auth-guard.js"></script>
+    <script type="module" src="/js/auth-guard.js"></script>
 </head>
 <body class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-cyan-100">
 
@@ -122,9 +122,11 @@
     </div>
 
     <!-- Library & Logic Scripts -->
+    <!-- DOCX generation library -->
+    <script src="https://unpkg.com/html-docx-js/dist/html-docx.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
-    <script type="module" src="config.js"></script>
-    <script type="module" src="chat-logic.js"></script>
+    <script type="module" src="/config.js"></script>
+    <script type="module" src="/js/pages/chat-logic.js"></script>
 
 </body>
 </html>
