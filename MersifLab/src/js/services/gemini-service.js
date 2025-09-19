@@ -1,5 +1,5 @@
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from "https://esm.run/@google/generative-ai";
-import { geminiApiKey } from "../../../config/supabase/config.js";
+import { geminiApiKey } from "/config.js";
 
 const genAI = new GoogleGenerativeAI(geminiApiKey);
 

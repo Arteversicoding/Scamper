@@ -8,21 +8,21 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; }
-        .nav-button.active { color: #00a2e1; /* AI Project Planner Blue */ }
+        .nav-button.active { color: #4a5568; }
     </style>
-    <script type="module" src="../js/components/auth/auth-guard.js"></script>
+    <script type="module" src="../js/services/auth-guard.js"></script>
 </head>
-<body class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-cyan-100">
+<body class="min-h-screen bg-gradient-to-br from-gray-50 via-gray-100 to-gray-200">
 
     <!-- Main App Container -->
     <div id="app-container" class="pb-24">
         <!-- Profile Header -->
-        <div class="bg-gradient-to-r from-cyan-500 via-blue-500 to-indigo-600 text-white p-6 rounded-b-3xl shadow-xl">
+        <div class="bg-gradient-to-r from-gray-500 via-gray-600 to-gray-700 text-white p-6 rounded-b-3xl shadow-xl">
             <div class="flex items-center space-x-4">
                 <div id="profile-avatar" class="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center text-4xl">👤</div>
                 <div class="flex-1">
                     <h2 id="profile-name" class="text-2xl font-bold">Loading...</h2>
-                    <p id="profile-profession" class="text-cyan-200">Loading...</p>
+                    <p id="profile-profession" class="text-gray-200">Loading...</p>
                 </div>
                 <a href="edit-profile.html" class="bg-white/20 hover:bg-white/30 p-2 rounded-full transition-colors">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
@@ -40,7 +40,7 @@
 
             <!-- Menu List -->
             <div class="bg-white rounded-2xl p-4 shadow-lg space-y-1">
-                <a href="account-info.html" class="flex items-center justify-between p-4 rounded-lg hover:bg-gray-50">
+                <a href="../index.html" class="flex items-center justify-between p-4 rounded-lg hover:bg-gray-50">
                     <span class="font-medium text-gray-700">Informasi Akun</span>
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400"><polyline points="9 18 15 12 9 6"/></svg>
                 </a>
@@ -59,25 +59,48 @@
             </div>
             
             <!-- Logout Button -->
-            <button id="logout-button" class="w-full bg-red-100 text-red-600 font-medium py-4 rounded-2xl shadow-md hover:bg-red-200 transition-colors">
+            <button id="logout-button" class="w-full bg-gray-100 text-gray-600 font-medium py-4 rounded-2xl shadow-md hover:bg-gray-200 transition-colors">
                 Keluar
             </button>
         </div>
     </div>
 
-    <!-- Bottom Navigation Placeholder -->
-    <div id="bottom-nav-placeholder"></div>
-    
-    <!-- Include BottomNav Component -->
-    <script type="module">
-        import BottomNav from '../../public/js/components/BottomNav.js';
-        document.addEventListener('DOMContentLoaded', () => {
-            BottomNav.init('profile');
-        });
-    </script>
+    <!-- Bottom Navigation -->
+    <div id="bottom-nav" class="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-sm border-t border-gray-200 p-4 z-50">
+        <div class="flex justify-around items-center max-w-lg mx-auto">
+            <a href="../index.html" data-page="home" class="nav-button flex flex-col items-center space-y-1 text-gray-500">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+                <span class="text-xs font-medium">Beranda</span>
+            </a>
+            <a href="chat/chat.html" data-page="chat" class="nav-button flex flex-col items-center space-y-1 text-gray-500">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                <span class="text-xs font-medium">Chat</span>
+            </a>
+            <a href="forum/forum.html" data-page="forum" class="nav-button flex flex-col items-center space-y-1 text-gray-500">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                <span class="text-xs font-medium">Forum</span>
+            </a>
+            <a href="materi/materi.html" data-page="materi" class="nav-button flex flex-col items-center space-y-1 text-gray-500">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                <span class="text-xs font-medium">Materi</span>
+            </a>
+            <a href="profil.html" data-page="profile" class="nav-button flex flex-col items-center space-y-1 text-gray-500">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                <span class="text-xs font-medium">Profil</span>
+            </a>
+        </div>
+    </div>
 
     <script>
+        function setActiveNav() {
+            document.querySelectorAll('.nav-button').forEach(button => {
+                if (button.dataset.page === 'profile') {
+                    button.classList.add('active');
+                }
+            });
+        }
         document.addEventListener('DOMContentLoaded', () => {
+            setActiveNav();
             initializeAuth();
         });
 
@@ -174,7 +197,7 @@
                     const authService = new AuthService();
                     try {
                         await authService.logout();
-                        window.location.href = '/src/pages /auth/login.html';
+                        window.location.href = 'auth/login.html';
                     } catch (error) {
                         console.error('Logout error:', error);
                         alert('Gagal logout. Silakan coba lagi.');

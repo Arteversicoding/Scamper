@@ -10,7 +10,7 @@
         body { font-family: 'Inter', sans-serif; }
         .nav-button.active { color: #00a2e1; }
     </style>
-    <script type="module" src="../js/components/auth/auth-guard.js"></script>
+    <script type="module" src="auth-guard.js"></script>
 </head>
 <body class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-cyan-100">
 
@@ -183,9 +183,9 @@
     </div>
 
     <script type="module">
-        import { AuthService } from '../js/services/auth-service.js';
+        import { AuthService } from './auth-service.js';
         import { getFirestore, doc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-        import { app } from '../js/services/firebase-init.js';
+        import { app } from './firebase-init.js';
 
         const db = getFirestore(app);
         const authService = new AuthService();

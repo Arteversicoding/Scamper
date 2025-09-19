@@ -166,6 +166,14 @@ function loadChatHistory(userId) {
             addMessageToChat(message.message, message.sender, false, message.timestamp);
         });
         forceScrollToBottom();
+    }, (error) => {
+        console.error('Firestore snapshot error:', error);
+        const code = error?.code || '';
+        if (code === 'permission-denied') {
+            addMessageToChat('Anda tidak memiliki izin untuk membaca riwayat chat. Pastikan Anda sudah login dan aturan Firestore untuk koleksi "chat_messages" mengizinkan akses user ke data miliknya sendiri.', 'ai');
+        } else {
+            addMessageToChat('Gagal memuat riwayat chat. Silakan coba lagi.', 'ai');
+        }
     });
 }
 
@@ -188,7 +196,7 @@ function addMessageToChat(message, sender, isLoading = false, timestamp = null) 
             </div>
         `;
     } else { // AI sender
-        const loadingIndicator = isLoading ? '<div class="dot-flashing"></div>' : '';
+        const loadingIndicator = isLoading ? '<span class="typing" aria-label="AI is typing"><span></span><span></span><span></span></span>' : '';
         messageHTML = `
             <div id="${messageId}" class="flex items-start space-x-3 mb-4">
                 <div class="w-10 h-10 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0">🤖</div>
@@ -420,10 +428,10 @@ function updateMessage(messageId, content) {
             }, 150);
         }
         
-        // Remove loading indicator (dot-flashing)
-        const loadingDiv = messageElement.querySelector('.dot-flashing');
-        if (loadingDiv) {
-            loadingDiv.remove();
+        // Remove loading indicator (legacy .dot-flashing or new .typing)
+        const loadingEl = messageElement.querySelector('.dot-flashing, .typing');
+        if (loadingEl) {
+            loadingEl.remove();
         }
     }
 }

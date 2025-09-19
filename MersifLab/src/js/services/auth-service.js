@@ -9,10 +9,10 @@ import {
     setPersistence,
     browserSessionPersistence
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { app, auth } from "./firebase-init.js";
+import { doc, setDoc, getDoc, updateDoc, collection, addDoc, query, orderBy, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { app, auth, db } from "./firebase-init.js";
 
-const db = getFirestore(app);
+// Use the shared Firestore instance configured in firebase-init.js
 
 export class AuthService {
     constructor() {
@@ -20,6 +20,8 @@ export class AuthService {
         this.isAuthenticated = false;
         this.auth = auth;
         this.provider = new GoogleAuthProvider();
+        
+        // Define admin emails
         this.adminEmails = [
             'admin@mi.com',
             'admin@moralintelligence.com',
@@ -27,37 +29,45 @@ export class AuthService {
             'admin@mersiflab.com'
         ];
 
-        this.authInitialized = new Promise(resolve => {
-            onAuthStateChanged(this.auth, async (user) => {
-                if (user) {
-                    const userDoc = await getDoc(doc(db, "users", user.uid));
-                    if (userDoc.exists()) {
-                        const userData = userDoc.data();
-                        this.currentUser = {
-                            uid: user.uid,
-                            email: user.email,
-                            displayName: userData.displayName || `${userData.firstName} ${userData.lastName}`,
-                            photoURL: user.photoURL || userData.photoURL,
-                            role: this.isAdminEmail(user.email) ? 'admin' : (userData.role || 'user')
-                        };
-                    } else {
-                        this.currentUser = {
-                            uid: user.uid,
-                            email: user.email,
-                            displayName: user.displayName || user.email,
-                            photoURL: user.photoURL,
-                            role: this.isAdminEmail(user.email) ? 'admin' : 'user'
-                        };
-                    }
-                    this.isAuthenticated = true;
-                    localStorage.setItem('currentUser', JSON.stringify(this.currentUser));
+        onAuthStateChanged(this.auth, async (user) => {
+            if (user) {
+                const userDoc = await getDoc(doc(db, "users", user.uid));
+                if (userDoc.exists()) {
+                    const userData = userDoc.data();
+                    this.currentUser = {
+                        uid: user.uid,
+                        email: user.email,
+                        displayName: userData.displayName || `${userData.firstName} ${userData.lastName}`,
+                        photoURL: user.photoURL || userData.photoURL,
+                        role: this.isAdminEmail(user.email) ? 'admin' : (userData.role || 'user')
+                    };
                 } else {
-                    this.currentUser = null;
-                    this.isAuthenticated = false;
-                    localStorage.removeItem('currentUser');
+                    // This could be a user from Google Sign-In who doesn't have a doc yet
+                    // Or a user that was created but their doc failed to be created
+                    this.currentUser = {
+                        uid: user.uid,
+                        email: user.email,
+                        displayName: user.displayName || user.email,
+                        photoURL: user.photoURL,
+                        role: this.isAdminEmail(user.email) ? 'admin' : 'user'
+                    };
                 }
-                resolve(this.currentUser);
-            });
+                this.isAuthenticated = true;
+                
+                // Save current user to localStorage for non-Firebase pages
+                localStorage.setItem('currentUser', JSON.stringify(this.currentUser));
+                
+                // Don't redirect if user is on edit-profile page
+                const currentPath = window.location.pathname;
+                if (currentPath === '/login.html' || currentPath === '/register.html') {
+                    window.location.href = '/index.html';
+                }
+            } else {
+                this.currentUser = null;
+                this.isAuthenticated = false;
+                // Clear localStorage when user logs out
+                localStorage.removeItem('currentUser');
+            }
         });
     }
 
@@ -247,10 +257,23 @@ export class AuthService {
     }
 
     waitForAuthInit() {
-        return this.authInitialized;
+        return new Promise(resolve => {
+            const unsubscribe = onAuthStateChanged(this.auth, user => {
+                unsubscribe();
+                if (user) {
+                    // Return user with role information
+                    resolve({
+                        ...user,
+                        role: this.isAdminEmail(user.email) ? 'admin' : 'user'
+                    });
+                } else {
+                    resolve(null);
+                }
+            });
+        });
     }
 
-    async getFriendlyErrorMessage(error) {
+    getFriendlyErrorMessage(error) {
         switch (error.code) {
             case 'auth/email-already-in-use':
                 return 'Email ini sudah terdaftar. Silakan gunakan email lain atau login.';
@@ -308,4 +331,64 @@ export class AuthService {
     }
 }
 
+// --- Firestore Chat History Functions ---
+
+/**
+ * Saves a chat message to a user's chat history subcollection in Firestore.
+ * @param {string} userId - The ID of the user.
+ * @param {string} message - The chat message content.
+ * @param {string} sender - Who sent the message ('user' or 'ai').
+ */
+export async function saveChatMessageToFirestore(userId, message, sender) {
+    if (!userId) {
+        console.warn('User ID is not available, skipping chat message save.');
+        return;
+    }
+    try {
+        const historyCollectionRef = collection(db, 'users', userId, 'chat_history');
+        await addDoc(historyCollectionRef, {
+            message: message,
+            sender: sender,
+            createdAt: serverTimestamp()
+        });
+    } catch (error) {
+        console.error("Error saving chat message to Firestore:", error);
+        throw new Error('Gagal menyimpan pesan ke Firestore.');
+    }
+}
+
+/**
+ * Retrieves the chat history for a user from Firestore.
+ * @param {string} userId - The ID of the user.
+ * @returns {Array} - An array of chat message objects.
+ */
+export async function getChatHistoryFromFirestore(userId) {
+    if (!userId) {
+        console.warn('User ID is not available, skipping chat history retrieval.');
+        return [];
+    }
+    try {
+        const historyCollectionRef = collection(db, 'users', userId, 'chat_history');
+        const q = query(historyCollectionRef, orderBy("createdAt", "asc"));
+        const querySnapshot = await getDocs(q);
+        
+        const history = [];
+        querySnapshot.forEach((doc) => {
+            const data = doc.data();
+            history.push({
+                id: doc.id,
+                message: data.message,
+                sender: data.sender,
+                // Convert Firestore Timestamp to JS Date object for consistency
+                created_at: data.createdAt ? data.createdAt.toDate().toISOString() : new Date().toISOString()
+            });
+        });
+        return history;
+    } catch (error) {
+        console.error("Error getting chat history from Firestore:", error);
+        throw new Error('Gagal mengambil riwayat obrolan dari Firestore.');
+    }
+}
+
+// Export a singleton instance to be used across the app
 export const authService = new AuthService();
