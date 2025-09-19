@@ -12,22 +12,22 @@
         .toggle-switch input { opacity: 0; width: 0; height: 0; }
         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 24px; }
         .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
-        input:checked + .slider { background-color: #00a2e1; }
+        input:checked + .slider { background-color: #6366f1; }
         input:checked + .slider:before { transform: translateX(24px); }
     </style>
     <script type="module" src="auth-guard.js"></script>
 </head>
-<body class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-cyan-100">
+<body class="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-indigo-100">
 
     <!-- Header -->
-    <div class="bg-gradient-to-r from-cyan-500 via-blue-500 to-indigo-600 text-white p-6 rounded-b-3xl shadow-xl">
+    <div class="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-700 text-white p-6 rounded-b-3xl shadow-xl">
         <div class="flex items-center space-x-4">
             <a href="profil.html" class="p-2 hover:bg-white/20 rounded-full transition-colors">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
             </a>
             <div>
                 <h1 class="text-2xl font-bold">Privasi & Keamanan</h1>
-                <p class="text-cyan-100 text-sm">Kelola pengaturan privasi dan keamanan akun</p>
+                <p class="text-indigo-100 text-sm">Kelola pengaturan privasi dan keamanan akun</p>
             </div>
         </div>
     </div>
@@ -36,7 +36,7 @@
         <!-- Privacy Settings -->
         <div class="bg-white rounded-2xl p-6 shadow-lg">
             <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2 text-cyan-600"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2 text-indigo-600"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
                 Pengaturan Privasi
             </h2>
             

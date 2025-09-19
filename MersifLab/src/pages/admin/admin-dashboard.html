@@ -20,23 +20,23 @@
     <script type="module" src="../../js/services/auth-guard.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
 </head>
-<body class="bg-gray-50 min-h-screen">
+<body class="bg-gradient-to-br from-blue-50 via-purple-50 to-indigo-100 min-h-screen">
     <!-- Navigation -->
     <nav class="bg-white shadow-lg">
         <div class="max-w-7xl mx-auto px-4">
             <div class="flex justify-between items-center py-4">
                 <div class="flex items-center space-x-4">
-                    <a href="../../index.html" class="text-2xl font-bold text-gray-600">
+                    <a href="../../index.html" class="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                         <i class="fas fa-graduation-cap mr-2"></i>AI Project Planner
                     </a>
-                    <span class="bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-sm font-medium">ADMIN</span>
+                    <span class="bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-3 py-1 rounded-full text-sm font-medium">ADMIN</span>
                 </div>
                 <div class="flex items-center space-x-4">
-                    <a href="../home.html" class="text-gray-600 hover:text-gray-600 transition-colors">
+                    <a href="../home.html" class="text-gray-600 hover:text-indigo-600 transition-colors">
                         <i class="fas fa-home mr-2"></i>Beranda
                     </a>
                     
-                    <button onclick="logout()" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors">
+                    <button onclick="logout()" class="bg-gradient-to-r from-red-500 to-red-600 text-white px-4 py-2 rounded-lg hover:from-red-600 hover:to-red-700 transition-all transform hover:scale-105">
                         <i class="fas fa-sign-out-alt mr-2"></i>Logout
                     </button>
                 </div>
@@ -56,8 +56,8 @@
         <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
             <div class="stat-card bg-white rounded-xl shadow-lg p-6">
                 <div class="flex items-center">
-                    <div class="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-users text-gray-600 text-xl"></i>
+                    <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-users text-white text-xl"></i>
                     </div>
                     <div class="ml-4">
                         <p class="text-sm font-medium text-gray-600">Total Users</p>
@@ -68,8 +68,8 @@
 
             <div class="stat-card bg-white rounded-xl shadow-lg p-6">
                 <div class="flex items-center">
-                    <div class="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-book text-gray-600 text-xl"></i>
+                    <div class="w-12 h-12 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-book text-white text-xl"></i>
                     </div>
                     <div class="ml-4">
                         <p class="text-sm font-medium text-gray-600">Total RPP</p>

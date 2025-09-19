@@ -50,16 +50,37 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-    background-color: #f3f4f6; /* bg-gray-100 */
+    background: linear-gradient(135deg, #f0f9ff 0%, #e0e7ff 100%); /* blue-50 to indigo-100 */
 }
 
 ::-webkit-scrollbar-thumb {
-    background-color: #818cf8; /* bg-indigo-400 */
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); /* indigo-500 to purple-500 */
     border-radius: 9999px; /* rounded-full */
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background-color: #6366f1; /* bg-indigo-500 */
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); /* indigo-600 to purple-600 */
+}
+
+/* Additional theme utilities */
+.theme-gradient-primary {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+}
+
+.theme-gradient-secondary {
+    background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%);
+}
+
+.theme-gradient-accent {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+.theme-shadow {
+    box-shadow: 0 10px 25px -3px rgba(99, 102, 241, 0.1), 0 4px 6px -2px rgba(99, 102, 241, 0.05);
+}
+
+.theme-shadow-hover:hover {
+    box-shadow: 0 20px 25px -5px rgba(99, 102, 241, 0.15), 0 10px 10px -5px rgba(99, 102, 241, 0.1);
 }
 
 /* Print styles */
