@@ -73,69 +73,65 @@
             </a>
         </div>
     </div>
-    
-    <script type="module" src="/js/services/firebase-init.js"></script>
+
+    <!-- Modal untuk Preview Full Content -->
+    <div id="preview-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden shadow-2xl">
+            <div class="bg-gradient-to-r from-blue-500 to-indigo-600 text-white p-6 flex justify-between items-center">
+                <div>
+                    <h2 id="modal-title" class="text-xl font-bold">Preview Materi</h2>
+                    <p class="text-blue-100 text-sm">Konten lengkap dokumen</p>
+                </div>
+                <button onclick="closePreviewModal()" class="text-white hover:text-gray-200 text-2xl font-bold">
+                    ×
+                </button>
+            </div>
+            <div class="p-6 overflow-y-auto max-h-[70vh]">
+                <div id="modal-content" class="prose prose-lg max-w-none">
+                    <!-- Content will be inserted here -->
+                </div>
+            </div>
+            <div class="bg-gray-50 p-4 flex justify-end space-x-3">
+                <button onclick="copyContent()" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                    📋 Copy Text
+                </button>
+                <button onclick="closePreviewModal()" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                    Tutup
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script type="module">
-        import { listenMaterialsRealtime } from '/js/services/materials-service.js';
+        import { getDocumentsFromTable } from '../../js/services/supabase-service.js';
 
         const listEl = document.getElementById('materi-list');
 
         function createCard(item) {
-            const downloadUrl = item.fileUrl || item.linkUrl;
-            const hasDownload = !!downloadUrl;
-            
-            const isYouTubeVideo = item.linkUrl && (item.linkUrl.includes('youtube.com') || item.linkUrl.includes('youtu.be'));
-            const isUploadedVideo = item.linkUrl && ['.mp4', '.webm', '.ogg', '.mov', '.avi'].some(ext => item.linkUrl.toLowerCase().endsWith(ext));
+            const fileName = item.name || 'Dokumen Tanpa Nama';
+            const textContent = item.text_content || '';
+            const preview = item.preview || 'Tidak ada konten';
+            const pageCount = item.page_count || 0;
+            const processedDate = item.processed_at ? new Date(item.processed_at).toLocaleDateString('id-ID') : 'Tidak diketahui';
 
-            let videoPreview = '';
-            if (isYouTubeVideo) {
-                let videoId = '';
-                try {
-                    const url = new URL(item.linkUrl);
-                    if (url.hostname === 'youtu.be') {
-                        videoId = url.pathname.slice(1);
-                    } else if (url.hostname === 'www.youtube.com' || url.hostname === 'youtube.com') {
-                        videoId = url.searchParams.get('v');
-                    }
-                } catch (e) {
-                    console.error('Invalid video URL:', item.linkUrl);
-                }
-
-                if (videoId) {
-                    videoPreview = `
-                        <div class="mt-4">
-                            <iframe 
-                                width="100%" 
-                                height="200" 
-                                src="https://www.youtube.com/embed/${videoId}" 
-                                title="YouTube video player" 
-                                frameborder="0" 
-                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                                allowfullscreen
-                                class="rounded-lg"
-                                style="border: 3px solid #4a5568;"
-                            ></iframe>
+            // Text content preview in a collapsible section
+            const previewContent = `
+                <div class="mt-4">
+                    <div class="bg-gray-50 rounded-lg p-4 border">
+                        <div class="flex justify-between items-center mb-3">
+                            <h5 class="font-medium text-gray-700">📖 Preview Konten</h5>
+                            <button class="preview-btn bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors" data-id="${item.id}" data-name="${fileName.replace(/"/g, '&quot;')}" data-content="">
+                                Preview Materi
+                            </button>
                         </div>
-                    `;
-                }
-            } else if (isUploadedVideo) {
-                const fileExtension = item.linkUrl.split('.').pop().toLowerCase();
-                const videoType = `video/${fileExtension}`;
-                videoPreview = `
-                    <div class="mt-4">
-                        <video 
-                            width="100%" 
-                            height="200" 
-                            controls 
-                            class="rounded-lg"
-                            style="border: 3px solid #4a5568;"
-                        >
-                            <source src="${item.linkUrl}" type="${videoType}">
-                            Your browser does not support the video tag.
-                        </video>
+                        <div class="text-gray-600 text-sm leading-relaxed">
+                            <div class="bg-white p-3 rounded border-l-4 border-blue-400">
+                                ${preview}
+                            </div>
+                        </div>
                     </div>
-                `;
-            }
+                </div>
+            `;
 
             return `
                 <div class="bg-white rounded-2xl p-5 shadow-lg transition-transform hover:scale-[1.02]">
@@ -144,31 +140,69 @@
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
                         </div>
                         <div class="flex-grow">
-                            <h4 class="font-semibold text-gray-800 mb-1">${item.title || 'Tanpa Judul'}</h4>
-                            <p class="text-gray-600 text-sm mb-3">${item.description || 'Tidak ada deskripsi.'}</p>
-                            ${hasDownload && !isYouTubeVideo && !isUploadedVideo ?
-                                `<a href="${downloadUrl}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center w-full sm:w-auto bg-gradient-to-r from-gray-500 to-gray-700 text-white px-4 py-2 rounded-lg text-sm font-medium hover:from-gray-600 hover:to-gray-700 transition-all duration-200 shadow-md hover:shadow-lg">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                                    Download Materi
-                                </a>` :
-                                ''
-                            }
-                             ${!hasDownload ? '<p class="text-sm text-gray-400">Tidak ada file untuk diunduh.</p>' : ''}
+                            <h4 class="font-semibold text-gray-800 mb-1">${fileName}</h4>
+                            <div class="text-gray-600 text-sm mb-3 space-y-1">
+                                <p>📄 Halaman: ${pageCount}</p>
+                                <p>📅 Diproses: ${processedDate}</p>
+                                <p>📊 Ukuran teks: ${(item.size / 1024).toFixed(2)} KB</p>
+                            </div>
+                            <div class="flex space-x-2">
+                                <button onclick="openChat('${item.id}')" class="inline-flex items-center justify-center bg-gradient-to-r from-green-500 to-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium hover:from-green-600 hover:to-green-800 transition-all duration-200 shadow-md hover:shadow-lg">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                                    Chat dengan Materi
+                                </button>
+                                <button onclick="viewFullDocument('${item.id}')" class="inline-flex items-center justify-center bg-gradient-to-r from-blue-500 to-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium hover:from-blue-600 hover:to-blue-800 transition-all duration-200 shadow-md hover:shadow-lg">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                    Lihat Detail
+                                </button>
+                            </div>
                         </div>
                     </div>
-                    ${videoPreview}
+                    ${previewContent}
                 </div>
             `;
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            listenMaterialsRealtime((items) => {
+        // Store documents data globally for preview
+        let documentsData = {};
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                console.log('🔄 Memuat dokumen dari table documents...');
+                const items = await getDocumentsFromTable();
+                console.log('📁 Dokumen yang ditemukan:', items);
+
                 if (items && items.length > 0) {
+                    console.log('✅ Berhasil memuat', items.length, 'dokumen');
+
+                    // Store documents data for preview
+                    items.forEach(item => {
+                        documentsData[item.id] = {
+                            name: item.name,
+                            text_content: item.text_content
+                        };
+                    });
+
                     listEl.innerHTML = items.map(createCard).join('');
+
+                    // Add event listeners for preview buttons
+                    document.querySelectorAll('.preview-btn').forEach(btn => {
+                        btn.addEventListener('click', function() {
+                            const docId = this.dataset.id;
+                            const docData = documentsData[docId];
+                            if (docData) {
+                                showFullPreview(docId, docData.name, docData.text_content);
+                            }
+                        });
+                    });
                 } else {
-                    listEl.innerHTML = '<p class="text-center text-gray-500">Belum ada materi yang tersedia.</p>';
+                    console.log('❌ Tidak ada dokumen yang ditemukan');
+                    listEl.innerHTML = '<p class="text-center text-gray-500">Belum ada materi yang tersedia. Upload PDF melalui halaman Chat untuk menambah materi.</p>';
                 }
-            });
+            } catch (error) {
+                console.error('💥 Gagal memuat dokumen dari Supabase:', error);
+                listEl.innerHTML = '<p class="text-center text-red-500">Gagal memuat materi. Silakan coba lagi nanti.</p>';
+            }
 
             const searchInput = document.getElementById('search-input');
             searchInput.addEventListener('input', (e) => {
@@ -176,14 +210,131 @@
                 const allCards = listEl.querySelectorAll('.bg-white');
                 allCards.forEach(card => {
                     const title = card.querySelector('h4').textContent.toLowerCase();
-                    const description = card.querySelector('p').textContent.toLowerCase();
-                    if (title.includes(searchTerm) || description.includes(searchTerm)) {
+                    if (title.includes(searchTerm)) {
                         card.style.display = '';
                     } else {
                         card.style.display = 'none';
                     }
                 });
             });
+
+            // Global functions for document interaction
+            let currentContent = '';
+
+            window.showFullPreview = function(documentId, fileName, textContent) {
+                console.log('🔍 Preview triggered:', { documentId, fileName, textContent: textContent?.substring(0, 100) + '...' });
+
+                currentContent = textContent || '';
+                const modal = document.getElementById('preview-modal');
+                const modalTitle = document.getElementById('modal-title');
+                const modalContent = document.getElementById('modal-content');
+
+                if (!modal || !modalTitle || !modalContent) {
+                    console.error('❌ Modal elements not found');
+                    return;
+                }
+
+                modalTitle.textContent = fileName || 'Dokumen';
+
+                // Format text content with better styling
+                const formattedContent = formatTextContent(textContent || 'Tidak ada konten untuk ditampilkan');
+                modalContent.innerHTML = formattedContent;
+
+                modal.classList.remove('hidden');
+                document.body.style.overflow = 'hidden'; // Prevent background scroll
+            };
+
+            window.closePreviewModal = function() {
+                const modal = document.getElementById('preview-modal');
+                modal.classList.add('hidden');
+                document.body.style.overflow = 'auto'; // Restore scroll
+            };
+
+            window.copyContent = function() {
+                navigator.clipboard.writeText(currentContent).then(() => {
+                    // Show notification
+                    const notification = document.createElement('div');
+                    notification.className = 'fixed top-4 right-4 z-50 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg';
+                    notification.textContent = '✅ Konten berhasil disalin!';
+                    document.body.appendChild(notification);
+                    setTimeout(() => notification.remove(), 3000);
+                }).catch(err => {
+                    console.error('Error copying text: ', err);
+                });
+            };
+
+            function formatTextContent(content) {
+                if (!content) return '<p class="text-gray-500">Tidak ada konten untuk ditampilkan.</p>';
+
+                // Clean and format the content
+                let formatted = content
+                    // Replace multiple spaces with single space
+                    .replace(/\s+/g, ' ')
+                    // Add line breaks for better readability
+                    .replace(/\. ([A-Z])/g, '.\n\n$1')
+                    // Handle numbered lists
+                    .replace(/(\d+\.\s)/g, '\n$1')
+                    // Handle bullet points
+                    .replace(/([•\-\*]\s)/g, '\n$1')
+                    // Handle section headers (assuming they end with colons)
+                    .replace(/([A-Za-z\s]+:)(\s*[A-Z])/g, '\n\n**$1**\n$2')
+                    // Split into paragraphs
+                    .split('\n')
+                    .filter(line => line.trim().length > 0)
+                    .map(line => {
+                        line = line.trim();
+
+                        // Style headers (lines ending with colon)
+                        if (line.endsWith(':') && line.length < 100) {
+                            return `<h3 class="text-lg font-semibold text-blue-600 mt-6 mb-3">${line}</h3>`;
+                        }
+
+                        // Style numbered lists
+                        if (/^\d+\.\s/.test(line)) {
+                            return `<div class="ml-4 mb-2"><span class="font-medium text-blue-500">${line.match(/^\d+\./)[0]}</span> ${line.replace(/^\d+\.\s/, '')}</div>`;
+                        }
+
+                        // Style bullet points
+                        if (/^[•\-\*]\s/.test(line)) {
+                            return `<div class="ml-4 mb-2"><span class="text-blue-500">•</span> ${line.replace(/^[•\-\*]\s/, '')}</div>`;
+                        }
+
+                        // Regular paragraphs
+                        if (line.length > 10) {
+                            return `<p class="mb-4 text-gray-700 leading-relaxed">${line}</p>`;
+                        }
+
+                        return `<p class="mb-2 text-gray-600">${line}</p>`;
+                    })
+                    .join('');
+
+                return formatted || '<p class="text-gray-500">Konten tidak dapat diformat dengan baik.</p>';
+            }
+
+            // Close modal when clicking outside
+            document.getElementById('preview-modal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closePreviewModal();
+                }
+            });
+
+            // Close modal with Escape key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    closePreviewModal();
+                }
+            });
+
+            window.openChat = function(documentId) {
+                // Redirect to chat page with document ID parameter
+                window.location.href = `/pages/chat/chat.html?document_id=${documentId}`;
+            };
+
+            window.viewFullDocument = function(documentId) {
+                // Show modal or new page with full document content
+                alert(`Fitur lihat detail dokumen akan segera hadir! Document ID: ${documentId}`);
+                // TODO: Implement full document viewer
+            };
         });
     </script>
 </body>

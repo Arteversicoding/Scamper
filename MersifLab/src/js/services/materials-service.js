@@ -27,26 +27,37 @@ export function listenMaterialsRealtime(callback) {
 	});
 }
 
-export async function createMaterial({ title, description, file, linkUrl }) {
+export async function createMaterial({ title, description, file, linkUrl, filePath, document_id }) {
 	if (!auth.currentUser) throw new Error('Unauthorized');
 	let fileUrl = '';
-	let filePath = '';
+	let materialFilePath = filePath || '';
+
+	// Handle regular file upload if file is provided
 	if (file) {
-		filePath = `materials/${auth.currentUser.uid}/${Date.now()}-${file.name}`;
-		const ref = storageRef(storage, filePath);
+		materialFilePath = `materials/${auth.currentUser.uid}/${Date.now()}-${file.name}`;
+		const ref = storageRef(storage, materialFilePath);
 		await uploadBytes(ref, file);
 		fileUrl = await getDownloadURL(ref);
 	}
-	return await addDoc(collection(db, MATERIALS_COLLECTION), {
+
+	// Prepare material data
+	const materialData = {
 		title,
 		description,
 		fileUrl,
 		linkUrl: linkUrl || '',
-		filePath,
+		filePath: materialFilePath,
 		createdAt: serverTimestamp(),
 		updatedAt: serverTimestamp(),
 		ownerId: auth.currentUser.uid
-	});
+	};
+
+	// Add document_id if provided (for PDF documents in table documents)
+	if (document_id) {
+		materialData.document_id = document_id;
+	}
+
+	return await addDoc(collection(db, MATERIALS_COLLECTION), materialData);
 }
 
 export async function updateMaterial(id, { title, description, newFile, linkUrl }) {

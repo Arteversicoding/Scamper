@@ -236,16 +236,47 @@
             }
         });
 
-        // Fungsi untuk upload file ke Supabase Storage
+        // Fungsi untuk menyimpan dokumen ke table documents
+        async function saveDocumentToTable(fileName, extractedText) {
+            try {
+                console.log('🔄 Menyimpan dokumen ke table documents...');
+
+                // Estimasi jumlah halaman berdasarkan panjang teks
+                const estimatedPages = Math.max(1, Math.ceil(extractedText.length / 2000));
+
+                const { data, error } = await supabase
+                    .from('documents')
+                    .insert([{
+                        file_name: fileName,
+                        text_content: extractedText,
+                        page_count: estimatedPages,
+                        processed_at: new Date().toISOString()
+                    }])
+                    .select();
+
+                if (error) {
+                    console.error('❌ Error menyimpan ke table documents:', error);
+                    throw error;
+                }
+
+                console.log('✅ Dokumen berhasil disimpan ke table documents');
+                return data[0];
+            } catch (error) {
+                console.error('💥 Error in saveDocumentToTable:', error);
+                throw error;
+            }
+        }
+
+        // Fungsi untuk upload file ke Supabase Storage (tetap dipertahankan untuk file non-PDF)
         async function uploadFileToSupabase(file, title, description) {
             try {
                 const fileExt = file.name.split('.').pop();
-                
+
                 const sanitize = (str) => str.toLowerCase()
-                    .replace(/\s+/g, '-') 
-                    .replace(/[^\w\-]+/g, '') 
-                    .replace(/\-\-+/g, '-') 
-                    .replace(/^-+/, '') 
+                    .replace(/\s+/g, '-')
+                    .replace(/[^\w\-]+/g, '')
+                    .replace(/\-\-+/g, '-')
+                    .replace(/^-+/, '')
                     .replace(/-+$/, '');
 
                 const baseName = `${sanitize(title)}-${sanitize(description)}`;
@@ -266,7 +297,7 @@
                 if (!publicUrl) {
                     throw new Error('Gagal mendapatkan URL publik untuk file yang diunggah.');
                 }
-                
+
                 return {
                     success: true,
                     fileName: fileName,
@@ -285,9 +316,11 @@
             const saveBtn = document.getElementById("saveMaterialBtn");
             const title = document.getElementById("materialTitle").value.trim();
             const descriptionFromTextarea = document.getElementById("materialDesc").value.trim();
-            const pdfExtractedText = document.getElementById("pdfExtractedText").value.trim(); // Get extracted text from hidden input
+            const pdfExtractedText = document.getElementById("pdfExtractedText").value.trim();
             const fileInput = document.getElementById("materialFile");
+            const pdfFileInput = document.getElementById("pdfMaterialFile");
             const file = fileInput.files[0];
+            const pdfFile = pdfFileInput.files[0];
             const linkUrl = document.getElementById("materialLink").value.trim();
 
             // Determine the final description to use
@@ -303,7 +336,7 @@
                 return;
             }
 
-            if (!file && !linkUrl && !pdfExtractedText) { // Ensure at least one content source
+            if (!file && !linkUrl && !pdfExtractedText) {
                 showNotification("❌ Pilih file, masukkan link, atau ekstrak PDF!", "error");
                 saveBtn.disabled = false;
                 saveBtn.innerHTML = '<i class="fas fa-save mr-2"></i>Simpan Materi';
@@ -313,21 +346,53 @@
             try {
                 let finalLink = linkUrl;
                 let uploadResult = null;
-                if (file) {
+                let documentResult = null;
+
+                // Jika ada extracted text dari PDF, simpan ke table documents
+                if (pdfExtractedText && pdfFile) {
+                    console.log('📄 Menyimpan PDF ke table documents...');
+                    documentResult = await saveDocumentToTable(
+                        title || pdfFile.name.replace(/\.pdf$/i, ''),
+                        pdfExtractedText
+                    );
+                    showNotification("✅ PDF berhasil disimpan ke database dokumen!", "success");
+
+                    // Untuk materials, gunakan reference ke document
+                    await createMaterial({
+                        title,
+                        description: `Dokumen PDF: ${finalDescription.substring(0, 200)}...`,
+                        linkUrl: linkUrl || null,
+                        filePath: '', // Tidak menggunakan file path untuk PDF yang diekstrak
+                        document_id: documentResult.id // Reference ke table documents
+                    });
+                }
+                // Jika ada file non-PDF, upload ke storage seperti biasa
+                else if (file) {
+                    console.log('📁 Mengupload file ke storage...');
                     uploadResult = await uploadFileToSupabase(file, title, finalDescription);
                     finalLink = uploadResult.publicUrl;
+
+                    await createMaterial({
+                        title,
+                        description: finalDescription,
+                        linkUrl: finalLink,
+                        filePath: uploadResult.fileName
+                    });
+                }
+                // Jika hanya link atau deskripsi manual
+                else {
+                    await createMaterial({
+                        title,
+                        description: finalDescription,
+                        linkUrl: finalLink,
+                        filePath: ''
+                    });
                 }
 
-                await createMaterial({ 
-                    title, 
-                    description: finalDescription, // Use the determined final description
-                    linkUrl: finalLink, 
-                    filePath: file ? uploadResult.fileName : '' 
-                });
                 showNotification("✅ Materi berhasil disimpan!", "success");
                 document.getElementById("materialForm").reset();
-                document.getElementById("pdfMaterialFile").value = ''; // Clear PDF file input
-                document.getElementById("pdfExtractedText").value = ''; // Clear hidden extracted text
+                document.getElementById("pdfMaterialFile").value = '';
+                document.getElementById("pdfExtractedText").value = '';
 
             } catch (err) {
                 console.error("Gagal menyimpan materi:", err);

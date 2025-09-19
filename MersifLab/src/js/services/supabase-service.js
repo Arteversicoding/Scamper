@@ -1,4 +1,4 @@
-import { createClient } from 'https://unpkg.com/@supabase/supabase-js@2';
+import { createClient } from 'https://cdn.skypack.dev/@supabase/supabase-js';
 
 // Supabase configuration
 const SUPABASE_URL = "https://zlcislycukayjgjhozjy.supabase.co";
@@ -75,10 +75,55 @@ export async function listFilesFromSupabase() {
 // Delete file from Supabase Storage
 export async function deleteFileFromSupabase(filePath) {
     const { error } = await supabase.storage.from(BUCKET).remove([filePath]);
-    
+
     if (error) {
         throw new Error(`Gagal menghapus file: ${error.message}`);
     }
-    
+
     return true;
+}
+
+// Get documents from table 'documents' with text_content
+export async function getDocumentsFromTable() {
+    try {
+        console.log('🔄 Mengambil dokumen dari table documents...');
+
+        const { data, error } = await supabase
+            .from('documents')
+            .select('id, file_name, text_content, page_count, processed_at, created_at')
+            .order('created_at', { ascending: false });
+
+        if (error) {
+            console.error('❌ Error mengambil data dari table documents:', error);
+            throw new Error(`Gagal mengambil dokumen: ${error.message}`);
+        }
+
+        if (!data || data.length === 0) {
+            console.log('❌ Tidak ada dokumen ditemukan di table documents');
+            return [];
+        }
+
+        console.log('✅ Berhasil mengambil', data.length, 'dokumen dari table documents');
+
+        // Convert data to format similar to file listing
+        const documentsWithPreview = data.map(doc => {
+            return {
+                id: doc.id,
+                name: doc.file_name || 'Dokumen Tanpa Nama',
+                text_content: doc.text_content,
+                page_count: doc.page_count || 0,
+                processed_at: doc.processed_at,
+                created_at: doc.created_at,
+                // Add preview of text_content (first 200 characters)
+                preview: doc.text_content ? doc.text_content.substring(0, 200) + '...' : 'Tidak ada konten',
+                size: doc.text_content ? doc.text_content.length : 0
+            };
+        });
+
+        return documentsWithPreview;
+
+    } catch (error) {
+        console.error('💥 Error in getDocumentsFromTable:', error);
+        throw error;
+    }
 }
