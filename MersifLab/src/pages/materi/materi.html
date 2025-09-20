@@ -24,6 +24,165 @@
             box-shadow: 0 20px 25px -5px rgba(99, 102, 241, 0.1), 0 10px 10px -5px rgba(99, 102, 241, 0.04);
             transition: all 0.3s ease;
         }
+        
+        /* Enhanced styles for structured content */
+        .content-preview {
+            max-height: 300px;
+            overflow: hidden;
+            position: relative;
+        }
+        .content-preview::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 40px;
+            background: linear-gradient(transparent, white);
+        }
+        
+        /* Markdown content styles */
+        .markdown-content h1 {
+            font-size: 1.875rem;
+            font-weight: bold;
+            color: #1f2937;
+            margin: 1.5rem 0 1rem 0;
+            border-bottom: 3px solid #6366f1;
+            padding-bottom: 0.5rem;
+        }
+        .markdown-content h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #374151;
+            margin: 1.25rem 0 0.75rem 0;
+            border-left: 4px solid #6366f1;
+            padding-left: 1rem;
+        }
+        .markdown-content h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #4b5563;
+            margin: 1rem 0 0.5rem 0;
+        }
+        .markdown-content h4 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #6b7280;
+            margin: 0.75rem 0 0.5rem 0;
+        }
+        .markdown-content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .markdown-content th {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+            padding: 0.75rem;
+            text-align: left;
+            font-weight: 600;
+        }
+        .markdown-content td {
+            padding: 0.75rem;
+            border-bottom: 1px solid #e5e7eb;
+            vertical-align: top;
+        }
+        .markdown-content tr:nth-child(even) {
+            background-color: #f9fafb;
+        }
+        .markdown-content tr:hover {
+            background-color: #f3f4f6;
+        }
+        .markdown-content ul {
+            list-style: none;
+            padding-left: 0;
+            margin: 0.5rem 0;
+        }
+        .markdown-content ul li {
+            position: relative;
+            padding-left: 1.5rem;
+            margin: 0.25rem 0;
+            line-height: 1.6;
+        }
+        .markdown-content ul li::before {
+            content: "•";
+            color: #6366f1;
+            font-weight: bold;
+            position: absolute;
+            left: 0;
+        }
+        .markdown-content ol {
+            padding-left: 1.5rem;
+            margin: 0.5rem 0;
+        }
+        .markdown-content ol li {
+            margin: 0.25rem 0;
+            line-height: 1.6;
+        }
+        .markdown-content blockquote {
+            border-left: 4px solid #6366f1;
+            padding-left: 1rem;
+            margin: 1rem 0;
+            background-color: #f8fafc;
+            padding: 1rem;
+            border-radius: 0 8px 8px 0;
+        }
+        .markdown-content code {
+            background-color: #f1f5f9;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+        }
+        .markdown-content pre {
+            background-color: #1e293b;
+            color: #e2e8f0;
+            padding: 1rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 1rem 0;
+        }
+        .markdown-content .highlight-box {
+            background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+            border: 1px solid #93c5fd;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+        .toc {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+        .toc h4 {
+            margin: 0 0 0.5rem 0 !important;
+            color: #374151;
+        }
+        .toc ul {
+            margin: 0;
+            list-style: none;
+            padding-left: 0;
+        }
+        .toc ul li {
+            padding: 0.25rem 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .toc ul li:last-child {
+            border-bottom: none;
+        }
+        .toc a {
+            color: #6366f1;
+            text-decoration: none;
+            font-size: 0.875rem;
+        }
+        .toc a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body class="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-indigo-100">
@@ -43,16 +202,15 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
             </div>
             
-            <!-- Featured Content -->
-            <!-- <div class="bg-gradient-to-r from-indigo-100 to-purple-100 rounded-2xl p-6 shadow-lg card-hover">
-                <h3 class="text-lg font-bold text-gray-800 mb-3">⭐ Materi Unggulan</h3>
-                <div class="bg-white rounded-xl p-4">
-                    <h4 class="font-semibold text-gray-800 mb-2">Panduan Kurikulum Merdeka SCAMPER</h4>
-                    <p class="text-gray-600 text-sm mb-3">Pelajari metode SCAMPER untuk pembelajaran berbasis proyek sesuai Kurikulum Merdeka.</p>
-                    <button class="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:from-blue-700 hover:to-purple-700 transition-all transform hover:scale-105">Mulai Belajar</button>
-                </div>
+            <!-- Filter -->
+            <div class="flex flex-wrap gap-2">
+                <button onclick="filterByType('all')" class="filter-btn active bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium">Semua</button>
+                <button onclick="filterByType('fase-a')" class="filter-btn bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium">Fase A</button>
+                <button onclick="filterByType('fase-b')" class="filter-btn bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium">Fase B</button>
+                <button onclick="filterByType('fase-c')" class="filter-btn bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium">Fase C</button>
+                <button onclick="filterByType('panduan')" class="filter-btn bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium">Panduan</button>
             </div>
-             -->
+            
             <!-- Materi List -->
             <div id="materi-list-container" class="space-y-4">
                 <h3 class="text-lg font-bold text-gray-800">📚 Semua Materi Pembelajaran</h3>
@@ -91,28 +249,50 @@
 
     <!-- Modal untuk Preview Full Content -->
     <div id="preview-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden shadow-2xl">
+        <div class="bg-white rounded-2xl max-w-5xl w-full max-h-[95vh] overflow-hidden shadow-2xl">
             <div class="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6 flex justify-between items-center">
-                <div>
+                <div class="flex-1">
                     <h2 id="modal-title" class="text-xl font-bold">Preview Materi</h2>
                     <p class="text-blue-100 text-sm">Konten lengkap dokumen</p>
                 </div>
-                <button onclick="closePreviewModal()" class="text-white hover:text-gray-200 text-2xl font-bold">
-                    ×
-                </button>
-            </div>
-            <div class="p-6 overflow-y-auto max-h-[70vh]">
-                <div id="modal-content" class="prose prose-lg max-w-none">
-                    <!-- Content will be inserted here -->
+                <div class="flex space-x-2">
+                    <button onclick="toggleTOC()" id="toc-btn" class="bg-white/20 hover:bg-white/30 text-white px-3 py-1 rounded-lg text-sm font-medium transition-colors">
+                        📋 Daftar Isi
+                    </button>
+                    <button onclick="closePreviewModal()" class="text-white hover:text-gray-200 text-2xl font-bold">
+                        ×
+                    </button>
                 </div>
             </div>
-            <div class="bg-gray-50 p-4 flex justify-end space-x-3">
-                <button onclick="copyContent()" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-                    📋 Copy Text
-                </button>
-                <button onclick="closePreviewModal()" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-                    Tutup
-                </button>
+            <div class="flex">
+                <!-- Table of Contents -->
+                <div id="toc-sidebar" class="hidden w-80 bg-gray-50 border-r border-gray-200 p-4 overflow-y-auto max-h-[80vh]">
+                    <div id="toc-content" class="space-y-2">
+                        <!-- TOC will be generated here -->
+                    </div>
+                </div>
+                <!-- Main Content -->
+                <div class="flex-1 p-6 overflow-y-auto max-h-[80vh]">
+                    <div id="modal-content" class="markdown-content prose prose-lg max-w-none">
+                        <!-- Content will be inserted here -->
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gray-50 p-4 flex justify-between items-center">
+                <div class="text-sm text-gray-600">
+                    <span id="reading-time"></span>
+                </div>
+                <div class="flex space-x-3">
+                    <button onclick="exportToPDF()" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                        📄 Export PDF
+                    </button>
+                    <button onclick="copyContent()" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                        📋 Copy Text
+                    </button>
+                    <button onclick="closePreviewModal()" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                        Tutup
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -121,6 +301,33 @@
         import { getDocumentsFromTable } from '../../js/services/supabase-service.js';
 
         const listEl = document.getElementById('materi-list');
+        let allDocuments = [];
+        let currentFilter = 'all';
+
+        function extractMetadata(content) {
+            const metadata = {
+                fase: '',
+                bab: '',
+                topik: '',
+                type: 'document'
+            };
+
+            if (content.includes('FASE A')) metadata.fase = 'fase-a';
+            else if (content.includes('FASE B')) metadata.fase = 'fase-b';
+            else if (content.includes('FASE C')) metadata.fase = 'fase-c';
+
+            const babMatch = content.match(/BAB\s+(\d+)[:\s]*([^\n]+)/i);
+            if (babMatch) {
+                metadata.bab = `BAB ${babMatch[1]}`;
+                metadata.topik = babMatch[2].trim();
+            }
+
+            if (content.includes('Panduan') || content.includes('PANDUAN')) {
+                metadata.type = 'panduan';
+            }
+
+            return metadata;
+        }
 
         function createCard(item) {
             const fileName = item.name || 'Dokumen Tanpa Nama';
@@ -128,54 +335,127 @@
             const preview = item.preview || 'Tidak ada konten';
             const pageCount = item.page_count || 0;
             const processedDate = item.processed_at ? new Date(item.processed_at).toLocaleDateString('id-ID') : 'Tidak diketahui';
+            
+            const metadata = extractMetadata(textContent);
+            const isStructured = textContent.includes('##') || textContent.includes('###') || textContent.includes('|');
 
-            // Text content preview in a collapsible section
-            const previewContent = `
-                <div class="mt-4">
-                    <div class="bg-gray-50 rounded-lg p-4 border">
-                        <div class="flex justify-between items-center mb-3">
-                            <h5 class="font-medium text-gray-700">📖 Preview Konten</h5>
-                            <button class="preview-btn bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors" data-id="${item.id}" data-name="${fileName.replace(/"/g, '&quot;')}" data-content="">
-                                Preview Materi
-                            </button>
-                        </div>
-                        <div class="text-gray-600 text-sm leading-relaxed">
-                            <div class="bg-white p-3 rounded border-l-4 border-blue-400">
-                                ${preview}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `;
+            // Enhanced preview for structured content
+            const structuredPreview = isStructured ? generateStructuredPreview(textContent) : '';
+            
+            const badgeColor = {
+                'fase-a': 'bg-green-100 text-green-800',
+                'fase-b': 'bg-blue-100 text-blue-800', 
+                'fase-c': 'bg-purple-100 text-purple-800',
+                'panduan': 'bg-orange-100 text-orange-800'
+            };
 
             return `
-                <div class="bg-white rounded-2xl p-5 shadow-lg transition-transform hover:scale-[1.02]">
+                <div class="bg-white rounded-2xl p-5 shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-[1.02] card-hover" data-type="${metadata.fase || metadata.type}">
                     <div class="flex items-start space-x-4">
-                        <div class="w-12 h-12 bg-gradient-to-r from-blue-400 to-cyan-500 rounded-xl flex items-center justify-center text-white flex-shrink-0">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                        <div class="w-14 h-14 bg-gradient-to-r from-blue-400 to-cyan-500 rounded-xl flex items-center justify-center text-white flex-shrink-0 shadow-lg">
+                            ${isStructured ? '📖' : '📄'}
                         </div>
                         <div class="flex-grow">
-                            <h4 class="font-semibold text-gray-800 mb-1">${fileName}</h4>
-                            <div class="text-gray-600 text-sm mb-3 space-y-1">
-                                <p>📄 Halaman: ${pageCount}</p>
-                                <p>📅 Diproses: ${processedDate}</p>
-                                <p>📊 Ukuran teks: ${(item.size / 1024).toFixed(2)} KB</p>
+                            <div class="flex items-start justify-between mb-2">
+                                <div class="flex-1">
+                                    <h4 class="font-semibold text-gray-800 mb-1 text-lg">${fileName}</h4>
+                                    ${metadata.bab ? `<p class="text-sm font-medium text-indigo-600 mb-1">${metadata.bab}: ${metadata.topik}</p>` : ''}
+                                </div>
+                                <div class="flex flex-col space-y-1">
+                                    ${metadata.fase ? `<span class="px-2 py-1 ${badgeColor[metadata.fase]} rounded-full text-xs font-medium">${metadata.fase.toUpperCase()}</span>` : ''}
+                                    ${metadata.type === 'panduan' ? `<span class="px-2 py-1 ${badgeColor['panduan']} rounded-full text-xs font-medium">PANDUAN</span>` : ''}
+                                </div>
                             </div>
-                            <div class="flex space-x-2">
+                            
+                            <div class="text-gray-600 text-sm mb-3 grid grid-cols-2 gap-2">
+                                <div class="flex items-center space-x-1">
+                                    <span>📄</span>
+                                    <span>Halaman: ${pageCount}</span>
+                                </div>
+                                <div class="flex items-center space-x-1">
+                                    <span>📅</span>
+                                    <span>${processedDate}</span>
+                                </div>
+                                <div class="flex items-center space-x-1">
+                                    <span>📊</span>
+                                    <span>Ukuran: ${(item.size / 1024).toFixed(1)} KB</span>
+                                </div>
+                                <div class="flex items-center space-x-1">
+                                    <span>${isStructured ? '📚' : '📄'}</span>
+                                    <span>${isStructured ? 'Terstruktur' : 'Teks Biasa'}</span>
+                                </div>
+                            </div>
+                            
+                            <div class="flex space-x-2 mb-4">
                                 <button onclick="openChat('${item.id}')" class="inline-flex items-center justify-center bg-gradient-to-r from-green-500 to-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium hover:from-green-600 hover:to-green-800 transition-all duration-200 shadow-md hover:shadow-lg">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
                                     Chat dengan Materi
                                 </button>
-                                <button onclick="viewFullDocument('${item.id}')" class="inline-flex items-center justify-center bg-gradient-to-r from-blue-500 to-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium hover:from-blue-600 hover:to-blue-800 transition-all duration-200 shadow-md hover:shadow-lg">
+                                <button onclick="showFullPreview('${item.id}', '${fileName.replace(/"/g, '&quot;')}', ${JSON.stringify(textContent).replace(/"/g, '&quot;')})" class="inline-flex items-center justify-center bg-gradient-to-r from-blue-500 to-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium hover:from-blue-600 hover:to-blue-800 transition-all duration-200 shadow-md hover:shadow-lg">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                                    Lihat Detail
+                                    ${isStructured ? 'Lihat Materi' : 'Lihat Detail'}
                                 </button>
                             </div>
                         </div>
                     </div>
-                    ${previewContent}
+                    
+                    ${isStructured && structuredPreview ? `
+                        <div class="mt-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-200">
+                            <div class="flex justify-between items-center mb-3">
+                                <h5 class="font-medium text-gray-700 flex items-center">
+                                    <span class="mr-2">📖</span>
+                                    Preview Struktur Materi
+                                </h5>
+                            </div>
+                            <div class="content-preview">
+                                ${structuredPreview}
+                            </div>
+                        </div>
+                    ` : `
+                        <div class="mt-4 bg-gray-50 rounded-lg p-4 border">
+                            <div class="flex justify-between items-center mb-3">
+                                <h5 class="font-medium text-gray-700">📄 Preview Konten</h5>
+                            </div>
+                            <div class="text-gray-600 text-sm leading-relaxed content-preview">
+                                ${preview}
+                            </div>
+                        </div>
+                    `}
                 </div>
             `;
+        }
+
+        function generateStructuredPreview(content) {
+            const lines = content.split('\n').filter(line => line.trim());
+            let preview = '';
+            let inTable = false;
+
+            for (let i = 0; i < Math.min(lines.length, 15); i++) {
+                const line = lines[i].trim();
+                
+                if (line.startsWith('# ')) {
+                    preview += `<h3 class="text-lg font-bold text-blue-600 mb-2">${line.substring(2)}</h3>`;
+                } else if (line.startsWith('## ')) {
+                    preview += `<h4 class="text-md font-semibold text-gray-700 mb-1 mt-3">${line.substring(3)}</h4>`;
+                } else if (line.startsWith('### ')) {
+                    preview += `<h5 class="text-sm font-medium text-gray-600 mb-1 mt-2">${line.substring(4)}</h5>`;
+                } else if (line.startsWith('|') && line.endsWith('|')) {
+                    if (!inTable) {
+                        preview += '<div class="text-sm text-blue-600 font-medium mb-1">📊 Tabel Data</div>';
+                        inTable = true;
+                    }
+                } else if (line.startsWith('- ') || line.startsWith('* ')) {
+                    preview += `<div class="text-sm text-gray-600 ml-4">• ${line.substring(2)}</div>`;
+                } else if (line.match(/^\d+\./)) {
+                    preview += `<div class="text-sm text-gray-600 ml-4">${line}</div>`;
+                } else if (line.startsWith('**') && line.endsWith('**')) {
+                    preview += `<div class="text-sm font-medium text-gray-700 mt-2">${line.slice(2, -2)}</div>`;
+                } else if (line.length > 20) {
+                    preview += `<div class="text-sm text-gray-600 mb-1">${line.substring(0, 100)}${line.length > 100 ? '...' : ''}</div>`;
+                }
+            }
+
+            return preview || '<div class="text-sm text-gray-500">Preview tidak tersedia</div>';
         }
 
         // Store documents data globally for preview
@@ -189,6 +469,7 @@
 
                 if (items && items.length > 0) {
                     console.log('✅ Berhasil memuat', items.length, 'dokumen');
+                    allDocuments = items;
 
                     // Store documents data for preview
                     items.forEach(item => {
@@ -198,159 +479,358 @@
                         };
                     });
 
-                    listEl.innerHTML = items.map(createCard).join('');
-
-                    // Add event listeners for preview buttons
-                    document.querySelectorAll('.preview-btn').forEach(btn => {
-                        btn.addEventListener('click', function() {
-                            const docId = this.dataset.id;
-                            const docData = documentsData[docId];
-                            if (docData) {
-                                showFullPreview(docId, docData.name, docData.text_content);
-                            }
-                        });
-                    });
+                    renderDocuments(items);
                 } else {
                     console.log('❌ Tidak ada dokumen yang ditemukan');
-                    listEl.innerHTML = '<p class="text-center text-gray-500">Belum ada materi yang tersedia. Upload PDF melalui halaman Chat untuk menambah materi.</p>';
+                    listEl.innerHTML = '<div class="text-center p-8"><div class="text-gray-400 text-6xl mb-4">📚</div><p class="text-gray-500 text-lg">Belum ada materi yang tersedia</p><p class="text-gray-400 text-sm">Upload PDF melalui halaman Chat untuk menambah materi</p></div>';
                 }
             } catch (error) {
                 console.error('💥 Gagal memuat dokumen dari Supabase:', error);
-                listEl.innerHTML = '<p class="text-center text-red-500">Gagal memuat materi. Silakan coba lagi nanti.</p>';
+                listEl.innerHTML = '<div class="text-center p-8"><div class="text-red-400 text-6xl mb-4">⚠️</div><p class="text-red-500 text-lg">Gagal memuat materi</p><p class="text-red-400 text-sm">Silakan coba lagi nanti</p></div>';
             }
 
+            // Search functionality
             const searchInput = document.getElementById('search-input');
             searchInput.addEventListener('input', (e) => {
                 const searchTerm = e.target.value.toLowerCase();
-                const allCards = listEl.querySelectorAll('.bg-white');
-                allCards.forEach(card => {
-                    const title = card.querySelector('h4').textContent.toLowerCase();
-                    if (title.includes(searchTerm)) {
-                        card.style.display = '';
-                    } else {
-                        card.style.display = 'none';
-                    }
+                const filtered = allDocuments.filter(doc => {
+                    const fileName = (doc.name || '').toLowerCase();
+                    const content = (doc.text_content || '').toLowerCase();
+                    return fileName.includes(searchTerm) || content.includes(searchTerm);
                 });
+                renderDocuments(filtered);
             });
+        });
 
-            // Global functions for document interaction
-            let currentContent = '';
-
-            window.showFullPreview = function(documentId, fileName, textContent) {
-                console.log('🔍 Preview triggered:', { documentId, fileName, textContent: textContent?.substring(0, 100) + '...' });
-
-                currentContent = textContent || '';
-                const modal = document.getElementById('preview-modal');
-                const modalTitle = document.getElementById('modal-title');
-                const modalContent = document.getElementById('modal-content');
-
-                if (!modal || !modalTitle || !modalContent) {
-                    console.error('❌ Modal elements not found');
-                    return;
-                }
-
-                modalTitle.textContent = fileName || 'Dokumen';
-
-                // Format text content with better styling
-                const formattedContent = formatTextContent(textContent || 'Tidak ada konten untuk ditampilkan');
-                modalContent.innerHTML = formattedContent;
-
-                modal.classList.remove('hidden');
-                document.body.style.overflow = 'hidden'; // Prevent background scroll
-            };
-
-            window.closePreviewModal = function() {
-                const modal = document.getElementById('preview-modal');
-                modal.classList.add('hidden');
-                document.body.style.overflow = 'auto'; // Restore scroll
-            };
-
-            window.copyContent = function() {
-                navigator.clipboard.writeText(currentContent).then(() => {
-                    // Show notification
-                    const notification = document.createElement('div');
-                    notification.className = 'fixed top-4 right-4 z-50 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg';
-                    notification.textContent = '✅ Konten berhasil disalin!';
-                    document.body.appendChild(notification);
-                    setTimeout(() => notification.remove(), 3000);
-                }).catch(err => {
-                    console.error('Error copying text: ', err);
-                });
-            };
-
-            function formatTextContent(content) {
-                if (!content) return '<p class="text-gray-500">Tidak ada konten untuk ditampilkan.</p>';
-
-                // Clean and format the content
-                let formatted = content
-                    // Replace multiple spaces with single space
-                    .replace(/\s+/g, ' ')
-                    // Add line breaks for better readability
-                    .replace(/\. ([A-Z])/g, '.\n\n$1')
-                    // Handle numbered lists
-                    .replace(/(\d+\.\s)/g, '\n$1')
-                    // Handle bullet points
-                    .replace(/([•\-\*]\s)/g, '\n$1')
-                    // Handle section headers (assuming they end with colons)
-                    .replace(/([A-Za-z\s]+:)(\s*[A-Z])/g, '\n\n**$1**\n$2')
-                    // Split into paragraphs
-                    .split('\n')
-                    .filter(line => line.trim().length > 0)
-                    .map(line => {
-                        line = line.trim();
-
-                        // Style headers (lines ending with colon)
-                        if (line.endsWith(':') && line.length < 100) {
-                            return `<h3 class="text-lg font-semibold text-blue-600 mt-6 mb-3">${line}</h3>`;
-                        }
-
-                        // Style numbered lists
-                        if (/^\d+\.\s/.test(line)) {
-                            return `<div class="ml-4 mb-2"><span class="font-medium text-blue-500">${line.match(/^\d+\./)[0]}</span> ${line.replace(/^\d+\.\s/, '')}</div>`;
-                        }
-
-                        // Style bullet points
-                        if (/^[•\-\*]\s/.test(line)) {
-                            return `<div class="ml-4 mb-2"><span class="text-blue-500">•</span> ${line.replace(/^[•\-\*]\s/, '')}</div>`;
-                        }
-
-                        // Regular paragraphs
-                        if (line.length > 10) {
-                            return `<p class="mb-4 text-gray-700 leading-relaxed">${line}</p>`;
-                        }
-
-                        return `<p class="mb-2 text-gray-600">${line}</p>`;
-                    })
-                    .join('');
-
-                return formatted || '<p class="text-gray-500">Konten tidak dapat diformat dengan baik.</p>';
+        function renderDocuments(documents) {
+            if (!documents || documents.length === 0) {
+                listEl.innerHTML = '<div class="text-center p-8"><div class="text-gray-400 text-6xl mb-4">📚</div><p class="text-gray-500 text-lg">Tidak ada materi yang sesuai</p></div>';
+                return;
             }
 
-            // Close modal when clicking outside
-            document.getElementById('preview-modal').addEventListener('click', function(e) {
-                if (e.target === this) {
-                    closePreviewModal();
-                }
+            // Filter documents based on current filter
+            const filteredDocs = currentFilter === 'all' ? documents : documents.filter(doc => {
+                const metadata = extractMetadata(doc.text_content || '');
+                return metadata.fase === currentFilter || metadata.type === currentFilter;
             });
 
-            // Close modal with Escape key
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 'Escape') {
-                    closePreviewModal();
-                }
+            listEl.innerHTML = filteredDocs.map(createCard).join('');
+        }
+
+        // Filter functionality
+        window.filterByType = function(type) {
+            currentFilter = type;
+            
+            // Update button states
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active', 'bg-indigo-600', 'text-white');
+                btn.classList.add('bg-gray-200', 'text-gray-700');
             });
+            event.target.classList.remove('bg-gray-200', 'text-gray-700');
+            event.target.classList.add('active', 'bg-indigo-600', 'text-white');
+            
+            renderDocuments(allDocuments);
+        };
 
-            window.openChat = function(documentId) {
-                // Redirect to chat page with document ID parameter
-                window.location.href = `/pages/chat/chat.html?document_id=${documentId}`;
-            };
+        // Global functions for document interaction
+        let currentContent = '';
+        let currentTOC = [];
 
-            window.viewFullDocument = function(documentId) {
-                // Show modal or new page with full document content
-                alert(`Fitur lihat detail dokumen akan segera hadir! Document ID: ${documentId}`);
-                // TODO: Implement full document viewer
+        window.showFullPreview = function(documentId, fileName, textContent) {
+            console.log('🔍 Preview triggered:', { documentId, fileName });
+
+            currentContent = textContent || '';
+            const modal = document.getElementById('preview-modal');
+            const modalTitle = document.getElementById('modal-title');
+            const modalContent = document.getElementById('modal-content');
+
+            if (!modal || !modalTitle || !modalContent) {
+                console.error('❌ Modal elements not found');
+                return;
+            }
+
+            modalTitle.textContent = fileName || 'Dokumen';
+
+            // Format content and generate TOC
+            const { formattedContent, toc } = formatMarkdownContent(textContent || 'Tidak ada konten untuk ditampilkan');
+            modalContent.innerHTML = formattedContent;
+            currentTOC = toc;
+
+            // Generate reading time
+            const wordCount = (textContent || '').split(' ').length;
+            const readingTime = Math.ceil(wordCount / 200); // Average 200 words per minute
+            document.getElementById('reading-time').textContent = `⏱️ Waktu baca: ~${readingTime} menit`;
+
+            // Generate TOC
+            generateTOC(toc);
+
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        };
+
+        function formatMarkdownContent(content) {
+            if (!content) return { formattedContent: '<p class="text-gray-500">Tidak ada konten untuk ditampilkan.</p>', toc: [] };
+
+            const lines = content.split('\n');
+            let formattedContent = '';
+            let toc = [];
+            let inTable = false;
+            let tableRows = [];
+            let inList = false;
+            let listItems = [];
+            let listType = '';
+
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i];
+                const trimmed = line.trim();
+
+                if (!trimmed) {
+                    // Close any open elements
+                    if (inTable) {
+                        formattedContent += generateTable(tableRows);
+                        tableRows = [];
+                        inTable = false;
+                    }
+                    if (inList) {
+                        formattedContent += generateList(listItems, listType);
+                        listItems = [];
+                        inList = false;
+                    }
+                    formattedContent += '<br>';
+                    continue;
+                }
+
+                // Headers
+                if (trimmed.startsWith('# ')) {
+                    const headerText = trimmed.substring(2);
+                    const id = 'header-' + headerText.toLowerCase().replace(/[^a-z0-9]/g, '-');
+                    formattedContent += `<h1 id="${id}">${headerText}</h1>`;
+                    toc.push({ level: 1, text: headerText, id });
+                } else if (trimmed.startsWith('## ')) {
+                    const headerText = trimmed.substring(3);
+                    const id = 'header-' + headerText.toLowerCase().replace(/[^a-z0-9]/g, '-');
+                    formattedContent += `<h2 id="${id}">${headerText}</h2>`;
+                    toc.push({ level: 2, text: headerText, id });
+                } else if (trimmed.startsWith('### ')) {
+                    const headerText = trimmed.substring(4);
+                    const id = 'header-' + headerText.toLowerCase().replace(/[^a-z0-9]/g, '-');
+                    formattedContent += `<h3 id="${id}">${headerText}</h3>`;
+                    toc.push({ level: 3, text: headerText, id });
+                } else if (trimmed.startsWith('#### ')) {
+                    const headerText = trimmed.substring(5);
+                    const id = 'header-' + headerText.toLowerCase().replace(/[^a-z0-9]/g, '-');
+                    formattedContent += `<h4 id="${id}">${headerText}</h4>`;
+                    toc.push({ level: 4, text: headerText, id });
+                }
+                // Tables
+                else if (trimmed.startsWith('|') && trimmed.endsWith('|')) {
+                    if (!inList) inList = false;
+                    if (!inTable) inTable = true;
+                    tableRows.push(trimmed);
+                }
+                // Lists
+                else if (trimmed.match(/^[-*+]\s/) || trimmed.match(/^\d+\.\s/)) {
+                    if (inTable) {
+                        formattedContent += generateTable(tableRows);
+                        tableRows = [];
+                        inTable = false;
+                    }
+                    if (!inList || (trimmed.match(/^\d+\.\s/) && listType !== 'ol') || (trimmed.match(/^[-*+]\s/) && listType !== 'ul')) {
+                        if (inList) {
+                            formattedContent += generateList(listItems, listType);
+                        }
+                        listType = trimmed.match(/^\d+\.\s/) ? 'ol' : 'ul';
+                        listItems = [];
+                        inList = true;
+                    }
+                    listItems.push(trimmed.replace(/^[-*+]\s|\d+\.\s/, ''));
+                }
+                // Bold text
+                else if (trimmed.startsWith('**') && trimmed.endsWith('**') && trimmed.length > 4) {
+                    formattedContent += `<div class="highlight-box"><strong>${trimmed.slice(2, -2)}</strong></div>`;
+                }
+                // Regular paragraphs
+                else {
+                    if (inTable) {
+                        formattedContent += generateTable(tableRows);
+                        tableRows = [];
+                        inTable = false;
+                    }
+                    if (inList) {
+                        formattedContent += generateList(listItems, listType);
+                        listItems = [];
+                        inList = false;
+                    }
+                    
+                    if (trimmed.length > 10) {
+                        // Process inline formatting
+                        let processedLine = trimmed
+                            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                            .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                            .replace(/`(.*?)`/g, '<code>$1</code>');
+                        
+                        formattedContent += `<p>${processedLine}</p>`;
+                    }
+                }
+            }
+
+            // Close any remaining open elements
+            if (inTable) {
+                formattedContent += generateTable(tableRows);
+            }
+            if (inList) {
+                formattedContent += generateList(listItems, listType);
+            }
+
+            return { formattedContent, toc };
+        }
+
+        function generateTable(rows) {
+            if (rows.length === 0) return '';
+            
+            let table = '<table>';
+            
+            for (let i = 0; i < rows.length; i++) {
+                const cells = rows[i].split('|').slice(1, -1).map(cell => cell.trim());
+                
+                if (i === 0) {
+                    table += '<thead><tr>';
+                    cells.forEach(cell => {
+                        table += `<th>${cell}</th>`;
+                    });
+                    table += '</tr></thead><tbody>';
+                } else if (i === 1 && cells.every(cell => cell.match(/^:?-+:?$/))) {
+                    // Skip separator row
+                    continue;
+                } else {
+                    table += '<tr>';
+                    cells.forEach(cell => {
+                        table += `<td>${cell}</td>`;
+                    });
+                    table += '</tr>';
+                }
+            }
+            
+            table += '</tbody></table>';
+            return table;
+        }
+
+        function generateList(items, type) {
+            if (items.length === 0) return '';
+            
+            const tag = type === 'ol' ? 'ol' : 'ul';
+            let list = `<${tag}>`;
+            
+            items.forEach(item => {
+                list += `<li>${item}</li>`;
+            });
+            
+            list += `</${tag}>`;
+            return list;
+        }
+
+        function generateTOC(tocItems) {
+            const tocContent = document.getElementById('toc-content');
+            if (!tocContent || tocItems.length === 0) return;
+
+            let tocHTML = '<h4 class="font-semibold text-gray-800 mb-3">📋 Daftar Isi</h4><ul>';
+            
+            tocItems.forEach(item => {
+                const paddingClass = `pl-${(item.level - 1) * 4}`;
+                tocHTML += `
+                    <li class="${paddingClass}">
+                        <a href="#${item.id}" onclick="scrollToSection('${item.id}')" class="block py-1 text-sm hover:text-blue-600 transition-colors">
+                            ${item.text}
+                        </a>
+                    </li>
+                `;
+            });
+            
+            tocHTML += '</ul>';
+            tocContent.innerHTML = tocHTML;
+        }
+
+        window.scrollToSection = function(id) {
+            const element = document.getElementById(id);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                // Highlight the section briefly
+                element.style.backgroundColor = '#fef3c7';
+                setTimeout(() => {
+                    element.style.backgroundColor = '';
+                }, 2000);
+            }
+        };
+
+        window.toggleTOC = function() {
+            const sidebar = document.getElementById('toc-sidebar');
+            const btn = document.getElementById('toc-btn');
+            
+            if (sidebar.classList.contains('hidden')) {
+                sidebar.classList.remove('hidden');
+                btn.textContent = '❌ Tutup Daftar Isi';
+            } else {
+                sidebar.classList.add('hidden');
+                btn.textContent = '📋 Daftar Isi';
+            }
+        };
+
+        window.closePreviewModal = function() {
+            const modal = document.getElementById('preview-modal');
+            const sidebar = document.getElementById('toc-sidebar');
+            modal.classList.add('hidden');
+            sidebar.classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        };
+
+        window.copyContent = function() {
+            navigator.clipboard.writeText(currentContent).then(() => {
+                showNotification('✅ Konten berhasil disalin!', 'success');
+            }).catch(err => {
+                console.error('Error copying text: ', err);
+                showNotification('❌ Gagal menyalin konten', 'error');
+            });
+        };
+
+        window.exportToPDF = function() {
+            showNotification('🔄 Fitur export PDF akan segera hadir!', 'info');
+        };
+
+        function showNotification(message, type = 'info') {
+            const colors = {
+                success: 'bg-green-500',
+                error: 'bg-red-500',
+                info: 'bg-blue-500'
             };
+            
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 z-50 ${colors[type]} text-white px-4 py-2 rounded-lg shadow-lg transition-all duration-300`;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('preview-modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closePreviewModal();
+            }
         });
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closePreviewModal();
+            }
+        });
+
+        window.openChat = function(documentId) {
+            window.location.href = `/pages/chat/chat.html?document_id=${documentId}`;
+        };
     </script>
 </body>
 </html>
