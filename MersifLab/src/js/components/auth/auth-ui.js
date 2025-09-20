@@ -27,9 +27,9 @@ async function handleLogin(e) {
         
         // Check if user is admin and redirect accordingly
         if (result.user.role === 'admin') {
-            window.location.href = 'admin-dashboard.html';
+            window.location.href = '/pages/admin/admin-dashboard.html';
         } else {
-            window.location.href = 'index.html';
+            window.location.href = '/pages/home.html';
         }
     } catch (error) {
         errorMessageDiv.textContent = getFriendlyErrorMessage(error.code);
@@ -52,7 +52,7 @@ async function handleRegister(e) {
 
     try {
         await authService.register(email, password);
-        window.location.href = 'index.html'; // Arahkan ke halaman utama
+        window.location.href = '/pages/home.html'; // Arahkan ke halaman utama
     } catch (error) {
         errorMessageDiv.textContent = getFriendlyErrorMessage(error.code);
     }

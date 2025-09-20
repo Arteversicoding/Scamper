@@ -160,7 +160,7 @@
         authService.waitForAuthInit().then(user => {
             if (user) {
                 if (user.role === 'admin') {
-                    window.location.href = '../admin/admin-dashboard.html';
+                    window.location.href = '/pages/admin/admin-dashboard.html';
                 } else {
                     window.location.href = '/pages/home.html';
                 }
@@ -180,7 +180,7 @@
                 const result = await authService.login(email, password);
                 
                 if (result.user.role === 'admin') {
-                    window.location.href = 'admin-dashboard.html';
+                    window.location.href = '/pages/admin/admin-dashboard.html';
                 } else {
                     window.location.href = '/pages/home.html';
                 }
@@ -199,7 +199,7 @@
                 const result = await authService.loginWithGoogle();
                 
                 if (result.user.role === 'admin') {
-                    window.location.href = 'admin-dashboard.html';
+                    window.location.href = '/pages/admin/admin-dashboard.html';
                 } else {
                     window.location.href = '/pages/home.html';
                 }

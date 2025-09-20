@@ -11,11 +11,13 @@ auth.onAuthStateChanged(function(user) {
   if (!user) {
     if (isAdminArea) {
       if (!currentPath.endsWith('login.html')) {
-        window.location.href = 'login.html';
+        // Use absolute path to avoid resolving to /pages/admin/login.html
+        window.location.href = '/pages/auth/login.html';
       }
     } else {
       if (!currentPath.endsWith('login.html') && !currentPath.endsWith('register.html')) {
-        window.location.href = 'login.html';
+        // Use absolute path to keep redirect consistent across directories
+        window.location.href = '/pages/auth/login.html';
       }
     }
   } else {
