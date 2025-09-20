@@ -102,6 +102,64 @@ function clearChatState() {
     if (chatContainer) chatContainer.innerHTML = '';
 }
 
+// ===== Quick Prompts (One-click buttons to send predefined prompts) =====
+const QUICK_PROMPTS = [
+    {
+        label: 'SCAMPER Bab 1: Lingkungan Buatan',
+        text: `Prompt Bab : 1\n\nBuatkan alur pembelajaran berbasis SCAMPER untuk Bab 1: Lingkungan Buatan (Fase A). \nTujuan Pembelajaran: Siswa mampu mengidentifikasi kondisi lingkungan di rumah dan sekolah serta mengajukan pertanyaan tentang permasalahan sederhana yang terkait dengan kehidupan sehari-hari. \nCocokkan dengan Capaian Pembelajaran "Lingkungan Kita" yang ada pada dokumen Panduan Proyek IPAS SD.`
+    },
+    {
+        label: 'SCAMPER Bab 2: Diorama Siklus Air',
+        text: `Prompt Bab : 2\n\nBuatkan alur pembelajaran berbasis SCAMPER untuk Bab 2: Diorama Siklus Air (Fase B). \nTujuan Pembelajaran: Siswa mampu menjelaskan siklus air dan kaitannya dengan menjaga ketersediaan air bersih. \nCocokkan dengan Capaian Pembelajaran "Perubahan wujud zat, Siklus Air, dan Interaksi Sosial" pada dokumen Panduan Proyek IPAS SD.`
+    },
+    {
+        label: 'SCAMPER Bab 3: Peta Keanekaragaman',
+        text: `Prompt Bab : 3\n\nBuatkan alur pembelajaran berbasis SCAMPER untuk Bab 3: Peta Keanekaragaman (Fase B). \nTujuan Pembelajaran: Siswa mampu mengidentifikasi keanekaragaman makhluk hidup di lingkungan sekitar. \nCocokkan dengan Capaian Pembelajaran Bab 3 yang ada pada dokumen Panduan Proyek IPAS SD.`
+    },
+    {
+        label: 'SCAMPER Bab 4: Sistem Tata Surya',
+        text: `Prompt Bab : 4\n\nBuatkan alur pembelajaran berbasis SCAMPER untuk Bab 4: Sistem Tata Surya (Fase C). \nTujuan Pembelajaran: Siswa mampu menjelaskan benda-benda langit, termasuk planet dan satelit, serta memahami perubahan lingkungan di bumi. \nCocokkan dengan Capaian Pembelajaran Bab 4 pada dokumen Panduan Proyek IPAS SD.`
+    },
+    {
+        label: 'SCAMPER Bab 5: Ekonomi Kreatif',
+        text: `Prompt Bab : 5\n\nBuatkan alur pembelajaran berbasis SCAMPER untuk Bab 5: Ekonomi Kreatif (Fase C). \nTujuan Pembelajaran: Siswa mampu mengenal kegiatan ekonomi masyarakat dan menganalisis contoh ekonomi kreatif di lingkungan sekitar. \nCocokkan dengan Capaian Pembelajaran Bab 5 pada dokumen Panduan Proyek IPAS SD.`
+    }
+];
+
+function renderQuickPrompts() {
+    const chatContainer = document.getElementById('chat-messages');
+    if (!chatContainer) return;
+
+    // Remove existing container to avoid duplicates
+    const existing = document.getElementById('quick-prompts');
+    if (existing && existing.parentElement) {
+        existing.parentElement.removeChild(existing);
+    }
+
+    // Create container
+    const wrap = document.createElement('div');
+    wrap.id = 'quick-prompts';
+    wrap.className = 'mt-2 space-y-2';
+
+    if (Array.isArray(QUICK_PROMPTS) && QUICK_PROMPTS.length > 0) {
+        const grid = document.createElement('div');
+        grid.className = 'grid grid-cols-1 md:grid-cols-2 gap-2';
+
+        QUICK_PROMPTS.forEach((p, idx) => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'w-full text-left bg-white border border-indigo-100 hover:border-indigo-300 hover:bg-indigo-50 text-gray-800 rounded-xl px-4 py-3 shadow-sm transition-all';
+            btn.innerHTML = `<span class="font-medium">${p.label}</span><br/><span class="text-xs text-gray-500">Klik untuk mengirim prompt</span>`;
+            btn.addEventListener('click', () => sendQuickMessage(p.text));
+            grid.appendChild(btn);
+        });
+
+        wrap.appendChild(grid);
+    }
+
+    chatContainer.appendChild(wrap);
+}
+
 // Prompt Sistem AI Pembelajaran IPAS SD berbasis SCAMPER
 const CURRICULUM_SYSTEM_PROMPT = `You are an AI learning design assistant specialized in IPAS (Ilmu Pengetahuan Alam dan Sosial) for Indonesian Elementary School based on "Kurikulum Merdeka".
 You have access to IPAS SD textbook materials stored in Supabase database (table: documents).
@@ -253,6 +311,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Hydrate from sessionStorage so refresh keeps messages
     hydrateFromStorage();
+
+    // Render quick prompt buttons
+    renderQuickPrompts();
 
     // Track scroll position and whether user is at bottom
     const chatContainerEl = document.getElementById('chat-messages');
@@ -932,17 +993,12 @@ function generateCurriculumTable(data) {
 
             <!-- Action Buttons -->
             <div class="mt-6 flex flex-wrap gap-3 justify-center">
-                <button onclick="exportToWord('${JSON.stringify(data).replace(/"/g, '&quot;')}')"
+                <button onclick="exportToWord('${encodeURIComponent(JSON.stringify(data))}')"
                         class="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3 rounded-xl text-sm font-medium hover:from-blue-700 hover:to-blue-800 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center gap-2">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14,2 14,8 20,8"/></svg>
                     Export ke Word
                 </button>
-                <button onclick="copyJSON('${JSON.stringify(data).replace(/"/g, '&quot;')}')"
-                        class="bg-gradient-to-r from-green-600 to-green-700 text-white px-6 py-3 rounded-xl text-sm font-medium hover:from-green-700 hover:to-green-800 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
-                    Copy JSON
-                </button>
-                <button onclick="shareResult('${JSON.stringify(data).replace(/"/g, '&quot;')}')"
+                <button onclick="shareResult('${encodeURIComponent(JSON.stringify(data))}')"
                         class="bg-gradient-to-r from-purple-600 to-purple-700 text-white px-6 py-3 rounded-xl text-sm font-medium hover:from-purple-700 hover:to-purple-800 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center gap-2">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16,6 12,2 8,6"/><line x1="12" x2="12" y1="2" y2="15"/></svg>
                     Share
@@ -977,7 +1033,7 @@ function formatAIResponse(content) {
 // Export to Word function for IPAS SCAMPER document
 window.exportToWord = function(dataStr) {
     try {
-        const data = JSON.parse(dataStr.replace(/&quot;/g, '"'));
+        const data = JSON.parse(decodeURIComponent(dataStr));
         
         // Generate source citation for Word document
         let sourceSection = '';
@@ -1271,7 +1327,7 @@ function showNotification(message, type = 'info') {
 // Share result function
 window.shareResult = function(dataStr) {
     try {
-        const data = JSON.parse(dataStr.replace(/&quot;/g, '"'));
+        const data = JSON.parse(decodeURIComponent(dataStr));
         const shareText = `Rencana Pembelajaran SCAMPER\n\nCP: ${data.cp}\n\nTP: ${data.tp}\n\nDibuat dengan Perencana Proyek AI`;
         
         if (navigator.share) {

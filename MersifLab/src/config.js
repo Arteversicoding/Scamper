@@ -8,5 +8,11 @@ export const firebaseConfig = {
   measurementId: "G-0HZCJ4DCDR"
 };
 
+// Primary key (existing behavior keeps working)
 export const geminiApiKey = "AIzaSyCfbBu08IwDGub-jchmaNi8KtDfAWXmxsA";
 
+// Additional/fallback keys tried when overload or rate-limit occurs (order matters)
+export const geminiApiKeys = [
+  geminiApiKey,
+  "AIzaSyCjYta79MewzaJ2NADeilR_c9LikW9hi90", // fallback provided by user
+];
