@@ -172,7 +172,7 @@
                 firstName: document.getElementById('firstName').value.trim(),
                 lastName: document.getElementById('lastName').value.trim(),
                 email: document.getElementById('email').value.trim(),
-                profession: document.getElementById('profession').value,
+                profession: (document.getElementById('profession') && document.getElementById('profession').value) ? document.getElementById('profession').value : '',
                 institution: document.getElementById('institution').value.trim(),
                 password: document.getElementById('password').value,
                 confirmPassword: document.getElementById('confirmPassword').value
