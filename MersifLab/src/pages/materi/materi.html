@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Materi Pembelajaran - AI Project Planner</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; }
@@ -793,7 +795,147 @@
         };
 
         window.exportToPDF = function() {
-            showNotification('🔄 Fitur export PDF akan segera hadir!', 'info');
+            try {
+                showNotification('🔄 Memproses export PDF...', 'info');
+
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF('p', 'mm', 'a4');
+
+                // Get current document title and content
+                const title = document.getElementById('modal-title').textContent || 'Materi Pembelajaran';
+                const content = currentContent || '';
+
+                if (!content) {
+                    showNotification('❌ Tidak ada konten untuk di-export', 'error');
+                    return;
+                }
+
+                // PDF configuration
+                const pageWidth = doc.internal.pageSize.getWidth();
+                const pageHeight = doc.internal.pageSize.getHeight();
+                const margin = 20;
+                const contentWidth = pageWidth - (margin * 2);
+                let yPosition = margin;
+
+                // Add header
+                doc.setFontSize(20);
+                doc.setFont(undefined, 'bold');
+                doc.text(title, margin, yPosition);
+                yPosition += 15;
+
+                // Add date
+                doc.setFontSize(10);
+                doc.setFont(undefined, 'normal');
+                doc.text(`Diekspor pada: ${new Date().toLocaleDateString('id-ID')}`, margin, yPosition);
+                yPosition += 10;
+
+                // Add separator line
+                doc.setLineWidth(0.5);
+                doc.line(margin, yPosition, pageWidth - margin, yPosition);
+                yPosition += 10;
+
+                // Process content
+                const lines = content.split('\n');
+                doc.setFontSize(11);
+
+                for (let line of lines) {
+                    line = line.trim();
+                    if (!line) {
+                        yPosition += 5;
+                        continue;
+                    }
+
+                    // Check if we need a new page
+                    if (yPosition > pageHeight - margin - 20) {
+                        doc.addPage();
+                        yPosition = margin;
+                    }
+
+                    // Handle different line types
+                    if (line.startsWith('# ')) {
+                        // Main heading
+                        doc.setFontSize(16);
+                        doc.setFont(undefined, 'bold');
+                        const text = line.substring(2);
+                        const splitText = doc.splitTextToSize(text, contentWidth);
+                        doc.text(splitText, margin, yPosition);
+                        yPosition += splitText.length * 8 + 5;
+                        doc.setFontSize(11);
+                        doc.setFont(undefined, 'normal');
+                    } else if (line.startsWith('## ')) {
+                        // Sub heading
+                        doc.setFontSize(14);
+                        doc.setFont(undefined, 'bold');
+                        const text = line.substring(3);
+                        const splitText = doc.splitTextToSize(text, contentWidth);
+                        doc.text(splitText, margin, yPosition);
+                        yPosition += splitText.length * 7 + 5;
+                        doc.setFontSize(11);
+                        doc.setFont(undefined, 'normal');
+                    } else if (line.startsWith('### ')) {
+                        // Sub-sub heading
+                        doc.setFontSize(12);
+                        doc.setFont(undefined, 'bold');
+                        const text = line.substring(4);
+                        const splitText = doc.splitTextToSize(text, contentWidth);
+                        doc.text(splitText, margin, yPosition);
+                        yPosition += splitText.length * 6 + 3;
+                        doc.setFontSize(11);
+                        doc.setFont(undefined, 'normal');
+                    } else if (line.startsWith('- ') || line.startsWith('* ')) {
+                        // Bullet points
+                        const text = '• ' + line.substring(2);
+                        const splitText = doc.splitTextToSize(text, contentWidth - 10);
+                        doc.text(splitText, margin + 5, yPosition);
+                        yPosition += splitText.length * 5 + 2;
+                    } else if (line.match(/^\d+\./)) {
+                        // Numbered list
+                        const splitText = doc.splitTextToSize(line, contentWidth - 10);
+                        doc.text(splitText, margin + 5, yPosition);
+                        yPosition += splitText.length * 5 + 2;
+                    } else if (line.startsWith('|') && line.endsWith('|')) {
+                        // Table row - simplified handling
+                        const cells = line.split('|').slice(1, -1).map(cell => cell.trim());
+                        const cellText = cells.join(' | ');
+                        const splitText = doc.splitTextToSize(cellText, contentWidth);
+                        doc.text(splitText, margin, yPosition);
+                        yPosition += splitText.length * 5 + 2;
+                    } else if (line.startsWith('**') && line.endsWith('**')) {
+                        // Bold text
+                        doc.setFont(undefined, 'bold');
+                        const text = line.slice(2, -2);
+                        const splitText = doc.splitTextToSize(text, contentWidth);
+                        doc.text(splitText, margin, yPosition);
+                        yPosition += splitText.length * 5 + 3;
+                        doc.setFont(undefined, 'normal');
+                    } else if (line.length > 5) {
+                        // Regular paragraph
+                        const splitText = doc.splitTextToSize(line, contentWidth);
+                        doc.text(splitText, margin, yPosition);
+                        yPosition += splitText.length * 5 + 3;
+                    }
+                }
+
+                // Add footer to each page
+                const totalPages = doc.internal.getNumberOfPages();
+                for (let i = 1; i <= totalPages; i++) {
+                    doc.setPage(i);
+                    doc.setFontSize(8);
+                    doc.setFont(undefined, 'normal');
+                    doc.text(`Halaman ${i} dari ${totalPages}`, pageWidth - margin - 30, pageHeight - 10);
+                    doc.text('Generated by AI Project Planner', margin, pageHeight - 10);
+                }
+
+                // Save the PDF
+                const fileName = `${title.replace(/[^a-zA-Z0-9]/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`;
+                doc.save(fileName);
+
+                showNotification('✅ PDF berhasil di-export!', 'success');
+
+            } catch (error) {
+                console.error('Error exporting PDF:', error);
+                showNotification('❌ Gagal export PDF: ' + error.message, 'error');
+            }
         };
 
         function showNotification(message, type = 'info') {
