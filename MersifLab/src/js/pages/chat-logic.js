@@ -17,6 +17,91 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
 let fileContext = null;
 let currentUser = null;
 
+// ===== Session Storage Helpers for per-tab chat persistence =====
+function getStorageKey() {
+    const uid = currentUser?.uid || 'guest';
+    const path = window.location.pathname; // e.g., /pages/chat/chat.html
+    return `chatState:${uid}:${path}`;
+}
+
+function loadChatState() {
+    try {
+        const raw = sessionStorage.getItem(getStorageKey());
+        return raw ? JSON.parse(raw) : null;
+    } catch (e) {
+        console.warn('Failed to parse chat state:', e);
+        return null;
+    }
+}
+
+function saveChatState(state) {
+    try {
+        state.lastUpdated = Date.now();
+        sessionStorage.setItem(getStorageKey(), JSON.stringify(state));
+    } catch (e) {
+        console.warn('Failed to save chat state:', e);
+    }
+}
+
+function ensureState() {
+    const s = loadChatState();
+    if (s && Array.isArray(s.messages)) return s;
+    return { messages: [], lastUpdated: Date.now(), atBottom: true, lastScroll: 0 };
+}
+
+function pushMessageToState(entry) {
+    const state = ensureState();
+    state.messages.push(entry);
+    // Cap to avoid hitting sessionStorage limits
+    if (state.messages.length > 100) {
+        state.messages = state.messages.slice(-100);
+    }
+    const chat = document.getElementById('chat-messages');
+    if (chat) state.atBottom = Math.abs(chat.scrollHeight - chat.scrollTop - chat.clientHeight) < 4;
+    saveChatState(state);
+}
+
+function updateMessageInState(id, newText) {
+    const state = ensureState();
+    const msg = state.messages.find(m => m.id === id);
+    if (msg) {
+        msg.text = newText;
+        msg.isLoading = false;
+        saveChatState(state);
+    }
+}
+
+function hydrateFromStorage() {
+    const state = loadChatState();
+    if (!state || !Array.isArray(state.messages) || state.messages.length === 0) return;
+
+    const chatContainer = document.getElementById('chat-messages');
+    if (!chatContainer) return;
+
+    // Replace initial static welcome with stored messages
+    chatContainer.innerHTML = '';
+
+    for (const m of state.messages) {
+        // Render stored messages without loading indicator
+        addMessageToChat(m.text, m.sender, false, m.timestamp ? { seconds: Math.floor(m.timestamp / 1000) } : null);
+    }
+
+    // Restore scroll
+    setTimeout(() => {
+        if (state.atBottom) {
+            forceScrollToBottom();
+        } else if (typeof state.lastScroll === 'number') {
+            chatContainer.scrollTop = state.lastScroll;
+        }
+    }, 50);
+}
+
+function clearChatState() {
+    try { sessionStorage.removeItem(getStorageKey()); } catch {}
+    const chatContainer = document.getElementById('chat-messages');
+    if (chatContainer) chatContainer.innerHTML = '';
+}
+
 // Prompt Sistem AI Pembelajaran IPAS SD berbasis SCAMPER
 const CURRICULUM_SYSTEM_PROMPT = `You are an AI learning design assistant specialized in IPAS (Ilmu Pengetahuan Alam dan Sosial) for Indonesian Elementary School based on "Kurikulum Merdeka".
 You have access to IPAS SD textbook materials stored in Supabase database (table: documents).
@@ -166,7 +251,19 @@ document.addEventListener('DOMContentLoaded', async () => {
         addMessageToChat("Anda harus login untuk memulai percakapan.", "ai");
     }
 
+    // Hydrate from sessionStorage so refresh keeps messages
+    hydrateFromStorage();
 
+    // Track scroll position and whether user is at bottom
+    const chatContainerEl = document.getElementById('chat-messages');
+    if (chatContainerEl) {
+        chatContainerEl.addEventListener('scroll', () => {
+            const state = ensureState();
+            state.lastScroll = chatContainerEl.scrollTop;
+            state.atBottom = Math.abs(chatContainerEl.scrollHeight - chatContainerEl.scrollTop - chatContainerEl.clientHeight) < 4;
+            saveChatState(state);
+        }, { passive: true });
+    }
 
     // Setup event listeners
     function setupEventListeners() {
@@ -269,6 +366,20 @@ function addMessageToChat(message, sender, isLoading = false, timestamp = null) 
         scrollToBottom(); // Smooth scroll for AI messages
     }
     
+    // Persist message to sessionStorage
+    try {
+        const entry = {
+            id: messageId,
+            sender,
+            text: message,
+            isLoading,
+            timestamp: Date.now()
+        };
+        pushMessageToState(entry);
+    } catch (e) {
+        console.warn('Failed to persist chat message:', e);
+    }
+
     return messageId;
 }
 
@@ -450,6 +561,8 @@ function updateMessage(messageId, content) {
     const messageElement = document.getElementById(messageId);
     if (messageElement) {
         const contentP = messageElement.querySelector('p');
+        // Prepare cleanContent in outer scope so we can persist it reliably
+        let cleanContentForPersist = null;
         if (contentP) {
             // Remove asterisks and format content with proper line breaks
             let cleanContent = content.replace(/\*/g, '');
@@ -458,6 +571,7 @@ function updateMessage(messageId, content) {
             cleanContent = formatAIResponse(cleanContent);
             
             contentP.innerHTML = cleanContent;
+            cleanContentForPersist = cleanContent;
             
             // Auto-scroll after content update
             setTimeout(() => {
@@ -469,6 +583,14 @@ function updateMessage(messageId, content) {
         const loadingEl = messageElement.querySelector('.dot-flashing, .typing');
         if (loadingEl) {
             loadingEl.remove();
+        }
+        // Persist updated AI message content (if we have it)
+        if (cleanContentForPersist !== null) {
+            try {
+                updateMessageInState(messageId, cleanContentForPersist);
+            } catch (e) {
+                console.warn('Failed to persist updated message:', e);
+            }
         }
     }
 }
