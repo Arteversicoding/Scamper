@@ -16,6 +16,7 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
 // State untuk menyimpan konteks dari file dan histori chat
 let fileContext = null;
 let currentUser = null;
+let isHydrating = false; // to prevent re-persisting messages during hydration
 
 // ===== Session Storage Helpers for per-tab chat persistence =====
 function getStorageKey() {
@@ -78,13 +79,31 @@ function hydrateFromStorage() {
     const chatContainer = document.getElementById('chat-messages');
     if (!chatContainer) return;
 
+    // Sanitize: remove consecutive duplicates caused by earlier persistence bug
+    const deduped = [];
+    for (const m of state.messages) {
+        const last = deduped[deduped.length - 1];
+        if (last && last.sender === m.sender && last.text === m.text) {
+            // skip exact consecutive duplicate
+            continue;
+        }
+        deduped.push(m);
+    }
+    if (deduped.length !== state.messages.length) {
+        state.messages = deduped;
+        saveChatState(state);
+    }
+
     // Replace initial static welcome with stored messages
     chatContainer.innerHTML = '';
 
+    // Render without re-persisting
+    isHydrating = true;
     for (const m of state.messages) {
         // Render stored messages without loading indicator
         addMessageToChat(m.text, m.sender, false, m.timestamp ? { seconds: Math.floor(m.timestamp / 1000) } : null);
     }
+    isHydrating = false;
 
     // Restore scroll
     setTimeout(() => {
@@ -428,17 +447,19 @@ function addMessageToChat(message, sender, isLoading = false, timestamp = null) 
     }
     
     // Persist message to sessionStorage
-    try {
-        const entry = {
-            id: messageId,
-            sender,
-            text: message,
-            isLoading,
-            timestamp: Date.now()
-        };
-        pushMessageToState(entry);
-    } catch (e) {
-        console.warn('Failed to persist chat message:', e);
+    if (!isHydrating) {
+        try {
+            const entry = {
+                id: messageId,
+                sender,
+                text: message,
+                isLoading,
+                timestamp: Date.now()
+            };
+            pushMessageToState(entry);
+        } catch (e) {
+            console.warn('Failed to persist chat message:', e);
+        }
     }
 
     return messageId;
