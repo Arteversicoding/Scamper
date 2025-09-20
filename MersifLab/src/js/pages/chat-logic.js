@@ -649,24 +649,58 @@ ${prompt}
             `.trim();
         } else {
             if (document.id === 'all_documents_general') {
+                const isGreeting = detectGeneralConversation(prompt);
+                const isOffTopic = detectOffTopic(prompt);
+
                 contextualPrompt = `
-Anda adalah asisten AI yang membantu pembelajaran IPAS SD. Anda memiliki akses ke semua materi pembelajaran IPAS dari Bab 1 sampai Bab 5.
+Anda adalah asisten AI yang ramah dan membantu dalam pembelajaran IPAS SD. Anda memiliki kepribadian yang hangat, sabar, dan mudah didekati seperti guru yang berpengalaman.
 
-=== ISI SEMUA DOKUMEN IPAS ===
+=== PENGETAHUAN UTAMA ANDA (SUMBER REFERENSI) ===
 ${documentText}
-=== AKHIR ISI ===
+=== AKHIR PENGETAHUAN UTAMA ===
 
-Sebagai asisten pembelajaran IPAS, berikan bantuan yang relevan dan informatif berdasarkan semua materi yang tersedia. Jika pertanyaan umum seperti sapaan, perkenalkan diri dan tawarkan bantuan terkait topik IPAS yang ada (lingkungan buatan, siklus air, keanekaragaman, tata surya, ekonomi kreatif).
+=== KONTEKS PERCAKAPAN ===
+Jenis pesan: ${isGreeting ? 'SAPAAN/PERKENALAN' : isOffTopic ? 'PERTANYAAN DI LUAR TOPIK' : 'PERTANYAAN UMUM'}
 
-Pertanyaan: ${prompt}
+PANDUAN RESPONS:
+1. UNTUK SAPAAN/PERKENALAN:
+   - Sapa dengan ramah dan hangat 😊
+   - Perkenalkan diri sebagai asisten pembelajaran IPAS SD
+   - Sebutkan topik-topik yang bisa dibantu: Lingkungan Buatan, Siklus Air, Keanekaragaman, Tata Surya, Ekonomi Kreatif
+
+2. UNTUK PERTANYAAN IPAS:
+   - Gunakan pengetahuan dari dokumen di atas sebagai referensi utama
+   - Berikan penjelasan yang mudah dipahami siswa SD
+   - Berikan contoh konkret dan menarik
+
+3. UNTUK PERTANYAAN DI LUAR TOPIK IPAS:
+   - Tetap sopan dan antusias, jangan menolak secara kaku
+   - Berikan respons singkat yang menunjukkan apresiasi
+   - Arahkan kembali ke IPAS dengan cara yang natural dan menarik
+   - Contoh: "Wah, itu topik yang menarik! Saya lebih ahli di bidang IPAS SD sih. Ngomong-ngomong, tahukah kamu tentang [topik IPAS yang menarik]? 🌟"
+
+4. GAYA KOMUNIKASI:
+   - Bahasa ramah, hangat, dan mudah dipahami
+   - Gunakan emoji yang sesuai (tapi jangan berlebihan)
+   - Bersikap seperti kakak/teman yang suka membantu belajar
+   - Kadang gunakan pertanyaan balik untuk membuat percakapan lebih interaktif
+
+Pertanyaan/Pesan: ${prompt}
             `.trim();
             } else {
                 contextualPrompt = `
-Anda adalah asisten AI yang membantu berdasarkan dokumen: "${documentName}".
+Anda adalah asisten AI yang ramah dan membantu dalam pembelajaran IPAS SD, dengan fokus khusus pada materi: "${documentName}".
 
-=== ISI DOKUMEN ===
+=== MATERI PEMBELAJARAN SPESIFIK ===
 ${documentText}
-=== AKHIR ISI ===
+=== AKHIR MATERI ===
+
+PANDUAN RESPONS:
+- Berikan jawaban yang ramah dan mudah dipahami
+- Fokus pada materi dari dokumen di atas
+- Jika pertanyaan di luar topik dokumen ini, tetap sopan dan arahkan ke materi yang tersedia
+- Gunakan bahasa yang sesuai untuk siswa SD
+- Sesekali gunakan emoji untuk membuat lebih menarik
 
 Pertanyaan: ${prompt}
             `.trim();
@@ -676,16 +710,7 @@ Pertanyaan: ${prompt}
         // Langkah 4: Kirim ke AI
         responseText = await getResponseWithContext(documentText, contextualPrompt);
 
-        // Tambahkan catatan sumber
-        if (document.id === 'all_documents_general') {
-            responseText += `
-
-📌 *Berdasarkan ${documentName}*`;
-        } else {
-            responseText += `
-
-📌 *Berdasarkan dokumen: "${documentName}" (ID: ${document.id})*`;
-        }
+        // Catatan sumber dihilangkan untuk pengalaman pengguna yang lebih bersih
 
 
 
@@ -856,7 +881,7 @@ async function handleFileUpload(event) {
 // Function to detect IPAS SCAMPER learning requests
 function detectCurriculumRequest(prompt) {
     const keywords = [
-        'tujuan pembelajaran', 'tp', 'capaian pembelajaran', 'cp', 
+        'tujuan pembelajaran', 'tp', 'capaian pembelajaran', 'cp',
         'scamper', 'kurikulum merdeka', 'rpp', 'silabus', 'pembelajaran',
         'ipas', 'ilmu pengetahuan alam', 'ilmu pengetahuan sosial',
         'alur pembelajaran', 'lkpd', 'lembar kerja', 'project',
@@ -864,6 +889,27 @@ function detectCurriculumRequest(prompt) {
         'rubrik', 'penilaian', 'asesmen'
     ];
     return keywords.some(keyword => prompt.toLowerCase().includes(keyword));
+}
+
+// Function to detect if conversation is greeting or general chat
+function detectGeneralConversation(prompt) {
+    const greetings = [
+        'halo', 'hai', 'hello', 'hi', 'selamat pagi', 'selamat siang', 'selamat sore', 'selamat malam',
+        'apa kabar', 'how are you', 'apa itu', 'siapa kamu', 'perkenalkan diri', 'kenalan'
+    ];
+    const promptLower = prompt.toLowerCase();
+    return greetings.some(greeting => promptLower.includes(greeting)) || prompt.length < 20;
+}
+
+// Function to detect off-topic questions
+function detectOffTopic(prompt) {
+    const offTopicKeywords = [
+        'sepak bola', 'musik', 'film', 'game', 'makanan', 'resep', 'politik', 'gosip',
+        'artis', 'teknologi', 'programming', 'coding', 'komputer', 'hp', 'gadget',
+        'matematika', 'bahasa inggris', 'sejarah', 'agama', 'olahraga'
+    ];
+    const promptLower = prompt.toLowerCase();
+    return offTopicKeywords.some(keyword => promptLower.includes(keyword));
 }
 
 // Function to render curriculum response with table
