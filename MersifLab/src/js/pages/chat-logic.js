@@ -586,24 +586,31 @@ async function handleChatInteraction(prompt) {
                 }
 
                 // Jika ditemukan dokumen yang relevan, gunakan itu
-                // Jika tidak, gunakan dokumen terbaru (yang pertama dalam array)
+                // Jika tidak, untuk percakapan umum gunakan semua dokumen
                 if (relevantDoc) {
                     selectedDocument = relevantDoc;
                     console.log(`🎯 Dokumen relevan ditemukan: ${selectedDocument.file_name}`);
+                    document = selectedDocument;
                 } else {
-                    selectedDocument = result.data[0];
-                    console.log(`⚠️ Tidak ada dokumen yang cocok dengan prompt. Menggunakan dokumen terbaru: ${selectedDocument.file_name}`);
-                    console.log(`🔍 Prompt yang dicari: "${prompt}"`);
-                    console.log(`📚 Dokumen tersedia: ${result.data.map(d => d.file_name).join(', ')}`);
+                    // Untuk percakapan umum (tanpa kata kunci bab spesifik), gabungkan semua dokumen
+                    console.log(`💬 Percakapan umum terdeteksi. Menggunakan semua dokumen untuk konteks lengkap.`);
 
-                    // Debug: tampilkan snippet konten setiap dokumen
-                    result.data.forEach((doc, index) => {
-                        const snippet = doc.text_content ? doc.text_content.substring(0, 200) + '...' : 'No content';
-                        console.log(`📄 Dokumen ${index + 1} (${doc.file_name}): ${snippet}`);
-                    });
+                    document = {
+                        id: 'all_documents_general',
+                        file_name: `Semua Dokumen IPAS (${result.data.length} Bab)`,
+                        text_content: result.data
+                            .map(doc => {
+                                const title = doc.file_name || 'Dokumen';
+                                return `=== ${title.toUpperCase()} ===\n${doc.text_content || ''}\n`;
+                            })
+                            .filter(content => content.trim() !== '')
+                            .join('\n=== DOKUMEN BERIKUTNYA ===\n'),
+                        page_count: result.data.reduce((total, doc) => total + (doc.page_count || 0), 0),
+                        processed_at: result.data[0]?.processed_at
+                    };
+
+                    console.log(`📚 Menggunakan gabungan dari ${result.data.length} dokumen IPAS`);
                 }
-
-                document = selectedDocument;
             } else {
                 document = null;
             }
@@ -641,7 +648,20 @@ Berdasarkan dokumen di atas, jawab permintaan pengguna:
 ${prompt}
             `.trim();
         } else {
-            contextualPrompt = `
+            if (document.id === 'all_documents_general') {
+                contextualPrompt = `
+Anda adalah asisten AI yang membantu pembelajaran IPAS SD. Anda memiliki akses ke semua materi pembelajaran IPAS dari Bab 1 sampai Bab 5.
+
+=== ISI SEMUA DOKUMEN IPAS ===
+${documentText}
+=== AKHIR ISI ===
+
+Sebagai asisten pembelajaran IPAS, berikan bantuan yang relevan dan informatif berdasarkan semua materi yang tersedia. Jika pertanyaan umum seperti sapaan, perkenalkan diri dan tawarkan bantuan terkait topik IPAS yang ada (lingkungan buatan, siklus air, keanekaragaman, tata surya, ekonomi kreatif).
+
+Pertanyaan: ${prompt}
+            `.trim();
+            } else {
+                contextualPrompt = `
 Anda adalah asisten AI yang membantu berdasarkan dokumen: "${documentName}".
 
 === ISI DOKUMEN ===
@@ -650,15 +670,22 @@ ${documentText}
 
 Pertanyaan: ${prompt}
             `.trim();
+            }
         }
 
         // Langkah 4: Kirim ke AI
         responseText = await getResponseWithContext(documentText, contextualPrompt);
 
         // Tambahkan catatan sumber
-        responseText += `
+        if (document.id === 'all_documents_general') {
+            responseText += `
+
+📌 *Berdasarkan ${documentName}*`;
+        } else {
+            responseText += `
 
 📌 *Berdasarkan dokumen: "${documentName}" (ID: ${document.id})*`;
+        }
 
 
 
