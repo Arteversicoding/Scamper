@@ -125,23 +125,23 @@ function clearChatState() {
 const QUICK_PROMPTS = [
     {
         label: 'SCAMPER Bab 1: Lingkungan Buatan',
-        text: `Prompt Bab : 1\n\nBuatkan alur pembelajaran berbasis SCAMPER untuk Bab 1: Lingkungan Buatan (Fase A). \nTujuan Pembelajaran: Siswa mampu mengidentifikasi kondisi lingkungan di rumah dan sekolah serta mengajukan pertanyaan tentang permasalahan sederhana yang terkait dengan kehidupan sehari-hari. \nCocokkan dengan Capaian Pembelajaran "Lingkungan Kita" yang ada pada dokumen Panduan Proyek IPAS SD.`
+        text: `Prompt Bab : 1\n\nBuatkan alur pembelajaran berbasis SCAMPER untuk BAB 1: LINGKUNGAN BUATAN FASE A. \nTujuan Pembelajaran: Siswa mampu mengidentifikasi kondisi lingkungan di rumah dan sekolah serta mengajukan pertanyaan tentang permasalahan sederhana yang terkait dengan kehidupan sehari-hari. \nCocokkan dengan Capaian Pembelajaran "Lingkungan Kita" yang ada pada dokumen Panduan Proyek IPAS SD.`
     },
     {
         label: 'SCAMPER Bab 2: Diorama Siklus Air',
-        text: `Prompt Bab : 2\n\nBuatkan alur pembelajaran berbasis SCAMPER untuk Bab 2: Diorama Siklus Air (Fase B). \nTujuan Pembelajaran: Siswa mampu menjelaskan siklus air dan kaitannya dengan menjaga ketersediaan air bersih. \nCocokkan dengan Capaian Pembelajaran "Perubahan wujud zat, Siklus Air, dan Interaksi Sosial" pada dokumen Panduan Proyek IPAS SD.`
+        text: `Prompt Bab : 2\n\nBuatkan alur pembelajaran berbasis SCAMPER untuk BAB 2: DIORAMA SIKLUS AIR (FASE B). \nTujuan Pembelajaran: Siswa mampu menjelaskan siklus air dan kaitannya dengan menjaga ketersediaan air bersih. \nCocokkan dengan Capaian Pembelajaran "Perubahan wujud zat, Siklus Air, dan Interaksi Sosial" pada dokumen Panduan Proyek IPAS SD.`
     },
     {
         label: 'SCAMPER Bab 3: Peta Keanekaragaman',
-        text: `Prompt Bab : 3\n\nBuatkan alur pembelajaran berbasis SCAMPER untuk Bab 3: Peta Keanekaragaman (Fase B). \nTujuan Pembelajaran: Siswa mampu mengidentifikasi keanekaragaman makhluk hidup di lingkungan sekitar. \nCocokkan dengan Capaian Pembelajaran Bab 3 yang ada pada dokumen Panduan Proyek IPAS SD.`
+        text: `Prompt Bab : 3\n\nBuatkan alur pembelajaran berbasis SCAMPER untuk BAB 3: PETA KEANEKARAGAMAN (FASE B). \nTujuan Pembelajaran: Siswa mampu mengidentifikasi keanekaragaman makhluk hidup di lingkungan sekitar. \nCocokkan dengan Capaian Pembelajaran Bab 3 yang ada pada dokumen Panduan Proyek IPAS SD.`
     },
     {
         label: 'SCAMPER Bab 4: Sistem Tata Surya',
-        text: `Prompt Bab : 4\n\nBuatkan alur pembelajaran berbasis SCAMPER untuk Bab 4: Sistem Tata Surya (Fase C). \nTujuan Pembelajaran: Siswa mampu menjelaskan benda-benda langit, termasuk planet dan satelit, serta memahami perubahan lingkungan di bumi. \nCocokkan dengan Capaian Pembelajaran Bab 4 pada dokumen Panduan Proyek IPAS SD.`
+        text: `Prompt Bab : 4\n\nBuatkan alur pembelajaran berbasis SCAMPER untuk BAB 4: SISTEM TATA SURYA (FASE C). \nTujuan Pembelajaran: Siswa mampu menjelaskan benda-benda langit, termasuk planet dan satelit, serta memahami perubahan lingkungan di bumi. \nCocokkan dengan Capaian Pembelajaran Bab 4 pada dokumen Panduan Proyek IPAS SD.`
     },
     {
         label: 'SCAMPER Bab 5: Ekonomi Kreatif',
-        text: `Prompt Bab : 5\n\nBuatkan alur pembelajaran berbasis SCAMPER untuk Bab 5: Ekonomi Kreatif (Fase C). \nTujuan Pembelajaran: Siswa mampu mengenal kegiatan ekonomi masyarakat dan menganalisis contoh ekonomi kreatif di lingkungan sekitar. \nCocokkan dengan Capaian Pembelajaran Bab 5 pada dokumen Panduan Proyek IPAS SD.`
+        text: `Prompt Bab : 5\n\nBuatkan alur pembelajaran berbasis SCAMPER untuk BAB 5: EKONOMI KREATIF (FASE C). \nTujuan Pembelajaran: Siswa mampu mengenal kegiatan ekonomi masyarakat dan menganalisis contoh ekonomi kreatif di lingkungan sekitar. \nCocokkan dengan Capaian Pembelajaran Bab 5 pada dokumen Panduan Proyek IPAS SD.`
     }
 ];
 
@@ -499,15 +499,114 @@ async function handleChatInteraction(prompt) {
             document = result.data;
             error = result.error;
         } else {
-            // Ambil dokumen terbaru
-            console.log('🆕 Mengambil dokumen terbaru dari tabel documents...');
+            // Ambil semua dokumen dan cari yang paling relevan
+            console.log('🔍 Mencari dokumen yang relevan dari tabel documents...');
             const result = await supabase
                 .from('documents')
                 .select('id, file_name, text_content, page_count, processed_at')
-                .order('created_at', { ascending: false })
-                .limit(1)
-                .maybeSingle();
-            document = result.data;
+                .order('created_at', { ascending: false });
+
+            if (result.data && result.data.length > 0) {
+                // Jika ada keyword spesifik dalam prompt, cari dokumen yang relevan
+                const promptLower = prompt.toLowerCase();
+                let selectedDocument = null;
+
+                // Cari dokumen berdasarkan kata kunci dalam prompt
+                // Gunakan prioritas pencarian dari yang paling spesifik
+                let relevantDoc = null;
+
+                // Prioritas 1: Cari berdasarkan format "bab : X" atau "bab X" yang eksplisit
+                const babMatch = promptLower.match(/bab\s*:?\s*(\d+)/);
+                if (babMatch) {
+                    const babNumber = babMatch[1];
+                    console.log(`🔍 Mencari dokumen untuk Bab ${babNumber}`);
+
+                    relevantDoc = result.data.find(doc => {
+                        if (!doc.text_content) return false;
+                        const contentLower = doc.text_content.toLowerCase();
+                        const fileNameLower = (doc.file_name || '').toLowerCase();
+
+                        // Cek di file name terlebih dahulu (lebih akurat)
+                        if (fileNameLower.includes(`bab ${babNumber}`) || fileNameLower.includes(`bab: ${babNumber}`)) {
+                            return true;
+                        }
+
+                        // Kemudian cek di konten dengan kriteria spesifik per bab
+                        switch(babNumber) {
+                            case '1':
+                                return contentLower.includes('lingkungan buatan') && contentLower.includes('fase a');
+                            case '2':
+                                return (contentLower.includes('siklus air') || contentLower.includes('diorama')) && contentLower.includes('fase b');
+                            case '3':
+                                return contentLower.includes('keanekaragaman') && contentLower.includes('fase b');
+                            case '4':
+                                return (contentLower.includes('tata surya') || contentLower.includes('sistem tata surya')) && contentLower.includes('fase c');
+                            case '5':
+                                return contentLower.includes('ekonomi kreatif') && contentLower.includes('fase c');
+                            default:
+                                return contentLower.includes(`bab ${babNumber}`);
+                        }
+                    });
+                }
+
+                // Prioritas 2: Jika tidak ditemukan dengan angka, cari berdasarkan kata kunci unik
+                if (!relevantDoc) {
+                    if (promptLower.includes('lingkungan buatan')) {
+                        relevantDoc = result.data.find(doc => {
+                            const contentLower = (doc.text_content || '').toLowerCase();
+                            return contentLower.includes('lingkungan buatan') && contentLower.includes('fase a');
+                        });
+                    } else if (promptLower.includes('diorama siklus air') || promptLower.includes('siklus air')) {
+                        relevantDoc = result.data.find(doc => {
+                            const contentLower = (doc.text_content || '').toLowerCase();
+                            return (contentLower.includes('siklus air') || contentLower.includes('diorama')) && contentLower.includes('fase b');
+                        });
+                    } else if (promptLower.includes('peta keanekaragaman') || promptLower.includes('keanekaragaman')) {
+                        relevantDoc = result.data.find(doc => {
+                            const contentLower = (doc.text_content || '').toLowerCase();
+                            return contentLower.includes('keanekaragaman') && contentLower.includes('fase b');
+                        });
+                    } else if (promptLower.includes('sistem tata surya') || promptLower.includes('tata surya')) {
+                        relevantDoc = result.data.find(doc => {
+                            const contentLower = (doc.text_content || '').toLowerCase();
+                            return (contentLower.includes('tata surya') || contentLower.includes('sistem tata surya')) && contentLower.includes('fase c');
+                        });
+                    } else if (promptLower.includes('ekonomi kreatif')) {
+                        relevantDoc = result.data.find(doc => {
+                            const contentLower = (doc.text_content || '').toLowerCase();
+                            return contentLower.includes('ekonomi kreatif') && contentLower.includes('fase c');
+                        });
+                    }
+                }
+
+                // Jika masih tidak ditemukan, log untuk debugging
+                if (!relevantDoc && babMatch) {
+                    console.log(`❌ Tidak ditemukan dokumen untuk Bab ${babMatch[1]}`);
+                    console.log(`📚 Dokumen tersedia:`, result.data.map(d => d.file_name));
+                }
+
+                // Jika ditemukan dokumen yang relevan, gunakan itu
+                // Jika tidak, gunakan dokumen terbaru (yang pertama dalam array)
+                if (relevantDoc) {
+                    selectedDocument = relevantDoc;
+                    console.log(`🎯 Dokumen relevan ditemukan: ${selectedDocument.file_name}`);
+                } else {
+                    selectedDocument = result.data[0];
+                    console.log(`⚠️ Tidak ada dokumen yang cocok dengan prompt. Menggunakan dokumen terbaru: ${selectedDocument.file_name}`);
+                    console.log(`🔍 Prompt yang dicari: "${prompt}"`);
+                    console.log(`📚 Dokumen tersedia: ${result.data.map(d => d.file_name).join(', ')}`);
+
+                    // Debug: tampilkan snippet konten setiap dokumen
+                    result.data.forEach((doc, index) => {
+                        const snippet = doc.text_content ? doc.text_content.substring(0, 200) + '...' : 'No content';
+                        console.log(`📄 Dokumen ${index + 1} (${doc.file_name}): ${snippet}`);
+                    });
+                }
+
+                document = selectedDocument;
+            } else {
+                document = null;
+            }
             error = result.error;
         }
 
