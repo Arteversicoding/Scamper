@@ -53,5 +53,45 @@ service cloud.firestore {
       allow create: if request.auth != null;
       allow read, update, delete: if false; // Only allow creation
     }
+
+    // Forum posts rules - NEW ADDITION
+    match /forum_posts/{postId} {
+      // Allow read access to all authenticated users
+      allow read: if request.auth != null;
+      
+      // Allow create access to authenticated users
+      allow create: if request.auth != null 
+        && request.resource.data.authorId == request.auth.uid;
+      
+      // Allow update access for:
+      // 1. Post author can edit their own posts
+      // 2. Any authenticated user can update likes and comments
+      allow update: if request.auth != null 
+        && (
+          // Allow author to update their own posts (edit functionality)
+          request.auth.uid == resource.data.authorId
+          // Allow any authenticated user to add/update likes and comments
+          || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likes', 'likedBy', 'comments']))
+        );
+      
+      // Allow delete access to post author only
+      allow delete: if request.auth != null 
+        && request.auth.uid == resource.data.authorId;
+    }
+
+    // Chat messages rules - EXISTING ADDITION
+    match /chat_messages/{docId} {
+      // Read: hanya boleh baca dokumen milik dirinya sendiri
+      allow read: if request.auth != null
+                  && request.auth.uid == resource.data.userId;
+
+      // Create: hanya boleh membuat dokumen dengan userId = uid sendiri
+      allow create: if request.auth != null
+                    && request.resource.data.userId == request.auth.uid;
+
+      // Update/Delete (opsional): hanya boleh ubah/hapus milik sendiri
+      allow update, delete: if request.auth != null
+                            && request.auth.uid == resource.data.userId;
+    }
   }
 }

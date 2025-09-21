@@ -127,20 +127,39 @@
 
     <!-- New Post Modal -->
     <div id="new-post-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
-        <div class="bg-white rounded-2xl p-6 w-full max-w-md mx-4">
-            <h2 class="text-xl font-bold mb-4">Buat Postingan Baru</h2>
+        <div class="bg-white rounded-2xl p-6 w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-xl font-bold text-gray-800">Buat Postingan Baru</h2>
+                <button type="button" id="close-modal-button" class="text-gray-400 hover:text-gray-600 p-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
             <form id="new-post-form">
                 <div class="mb-4">
-                    <label for="post-title" class="block text-sm font-medium text-gray-700 mb-1">Judul</label>
-                    <input type="text" id="post-title" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
+                    <label for="post-category" class="block text-sm font-medium text-gray-700 mb-2">Kategori</label>
+                    <select id="post-category" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <option value="Umum">Umum</option>
+                        <option value="SCAMPER">SCAMPER</option>
+                        <option value="RPP">RPP</option>
+                        <option value="Asesmen">Asesmen</option>
+                        <option value="Kurikulum">Kurikulum Merdeka</option>
+                        <option value="Pembelajaran">Strategi Pembelajaran</option>
+                        <option value="Teknologi">Teknologi Pendidikan</option>
+                        <option value="Diskusi">Diskusi Umum</option>
+                    </select>
                 </div>
                 <div class="mb-4">
-                    <label for="post-content" class="block text-sm font-medium text-gray-700 mb-1">Isi</label>
-                    <textarea id="post-content" rows="4" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" required></textarea>
+                    <label for="post-title" class="block text-sm font-medium text-gray-700 mb-2">Judul Diskusi</label>
+                    <input type="text" id="post-title" placeholder="Masukkan judul yang menarik..." class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
                 </div>
-                <div class="flex justify-end space-x-2">
-                    <button type="button" id="cancel-post-button" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg">Batal</button>
-                    <button type="submit" class="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all">Kirim</button>
+                <div class="mb-4">
+                    <label for="post-content" class="block text-sm font-medium text-gray-700 mb-2">Isi Diskusi</label>
+                    <textarea id="post-content" rows="6" placeholder="Bagikan pemikiran, pertanyaan, atau pengalaman Anda...&#10;&#10;Tips: Gunakan #hashtag untuk topik tertentu" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none" required></textarea>
+                    <p class="text-xs text-gray-500 mt-1">Gunakan #hashtag untuk mengelompokkan topik (contoh: #kurikulummerdeka #asesmen)</p>
+                </div>
+                <div class="flex justify-end space-x-3">
+                    <button type="button" id="cancel-post-button" class="bg-gray-100 text-gray-700 px-5 py-2 rounded-lg hover:bg-gray-200 transition-colors">Batal</button>
+                    <button type="submit" class="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-2 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all font-medium">Posting</button>
                 </div>
             </form>
         </div>
@@ -158,5 +177,6 @@
     </script>
     <script src="/js/pages/forum/forum-search.js" defer></script>
     <script type="module" src="/js/pages/forum/forum-logic.js"></script>
+    <script type="module" src="/js/pages/forum/forum-test.js"></script>
 </body>
 </html>
