@@ -648,6 +648,7 @@ Berdasarkan dokumen di atas, jawab permintaan pengguna:
 ${prompt}
             `.trim();
         } else {
+            let hasIntroduced = false; // state global, bisa disimpan per user
             if (document.id === 'all_documents_general') {
                 const isGreeting = detectGeneralConversation(prompt);
                 const isOffTopic = detectOffTopic(prompt);
@@ -685,10 +686,12 @@ PANDUAN RESPONS:
    - Bersikap seperti kakak/teman yang suka membantu belajar
    - Kadang gunakan pertanyaan balik untuk membuat percakapan lebih interaktif
 
-Pertanyaan/Pesan: ${prompt}
-            `.trim();
-            } else {
-                contextualPrompt = `
+Pesan pengguna: ${prompt}
+        `.trim();
+
+        hasIntroduced = true; // setelah pertama kali perkenalan, tandai
+    } else {
+        contextualPrompt = `
 Anda adalah asisten AI yang ramah dan membantu dalam pembelajaran IPAS SD, dengan fokus khusus pada materi: "${documentName}".
 
 === MATERI PEMBELAJARAN SPESIFIK ===
@@ -701,6 +704,7 @@ PANDUAN RESPONS:
 - Jika pertanyaan di luar topik dokumen ini, tetap sopan dan arahkan ke materi yang tersedia
 - Gunakan bahasa yang sesuai untuk siswa SD
 - Sesekali gunakan emoji untuk membuat lebih menarik
+
 
 Pertanyaan: ${prompt}
             `.trim();

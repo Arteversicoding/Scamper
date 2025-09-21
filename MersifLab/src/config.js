@@ -9,10 +9,10 @@ export const firebaseConfig = {
 };
 
 // Primary key (existing behavior keeps working)
-export const geminiApiKey = "AIzaSyAJJ6DT9E5RmMZm5_fNgdGEbc4hU0fuVlc";
+export const geminiApiKey = "AIzaSyBE_27Q5mMbOOzXDbnTpSarb69xMoBrppo";
 
 // Additional/fallback keys tried when overload or rate-limit occurs (order matters)
 export const geminiApiKeys = [
   geminiApiKey,
-  "AIzaSyCjYta79MewzaJ2NADeilR_c9LikW9hi90", // fallback provided by user
+  "AIzaSyBE_27Q5mMbOOzXDbnTpSarb69xMoBrppo", // fallback provided by user
 ];

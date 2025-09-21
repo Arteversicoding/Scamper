@@ -571,121 +571,135 @@
         };
 
         function formatMarkdownContent(content) {
-            if (!content) return { formattedContent: '<p class="text-gray-500">Tidak ada konten untuk ditampilkan.</p>', toc: [] };
+    if (!content) return { formattedContent: '<p class="text-gray-500">Tidak ada konten untuk ditampilkan.</p>', toc: [] };
 
-            const lines = content.split('\n');
-            let formattedContent = '';
-            let toc = [];
-            let inTable = false;
-            let tableRows = [];
-            let inList = false;
-            let listItems = [];
-            let listType = '';
+    const lines = content.split('\n');
+    let formattedContent = '';
+    let toc = [];
+    let inTable = false;
+    let tableRows = [];
+    let inList = false;
+    let listItems = [];
+    let listType = '';
 
-            for (let i = 0; i < lines.length; i++) {
-                const line = lines[i];
-                const trimmed = line.trim();
+    // Helper function untuk memproses inline formatting
+    function processInlineFormatting(text) {
+        return text
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+            .replace(/\*(.*?)\*/g, '<em>$1</em>')
+            .replace(/`(.*?)`/g, '<code>$1</code>');
+    }
 
-                if (!trimmed) {
-                    // Close any open elements
-                    if (inTable) {
-                        formattedContent += generateTable(tableRows);
-                        tableRows = [];
-                        inTable = false;
-                    }
-                    if (inList) {
-                        formattedContent += generateList(listItems, listType);
-                        listItems = [];
-                        inList = false;
-                    }
-                    formattedContent += '<br>';
-                    continue;
-                }
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        const trimmed = line.trim();
 
-                // Headers
-                if (trimmed.startsWith('# ')) {
-                    const headerText = trimmed.substring(2);
-                    const id = 'header-' + headerText.toLowerCase().replace(/[^a-z0-9]/g, '-');
-                    formattedContent += `<h1 id="${id}">${headerText}</h1>`;
-                    toc.push({ level: 1, text: headerText, id });
-                } else if (trimmed.startsWith('## ')) {
-                    const headerText = trimmed.substring(3);
-                    const id = 'header-' + headerText.toLowerCase().replace(/[^a-z0-9]/g, '-');
-                    formattedContent += `<h2 id="${id}">${headerText}</h2>`;
-                    toc.push({ level: 2, text: headerText, id });
-                } else if (trimmed.startsWith('### ')) {
-                    const headerText = trimmed.substring(4);
-                    const id = 'header-' + headerText.toLowerCase().replace(/[^a-z0-9]/g, '-');
-                    formattedContent += `<h3 id="${id}">${headerText}</h3>`;
-                    toc.push({ level: 3, text: headerText, id });
-                } else if (trimmed.startsWith('#### ')) {
-                    const headerText = trimmed.substring(5);
-                    const id = 'header-' + headerText.toLowerCase().replace(/[^a-z0-9]/g, '-');
-                    formattedContent += `<h4 id="${id}">${headerText}</h4>`;
-                    toc.push({ level: 4, text: headerText, id });
-                }
-                // Tables
-                else if (trimmed.startsWith('|') && trimmed.endsWith('|')) {
-                    if (!inList) inList = false;
-                    if (!inTable) inTable = true;
-                    tableRows.push(trimmed);
-                }
-                // Lists
-                else if (trimmed.match(/^[-*+]\s/) || trimmed.match(/^\d+\.\s/)) {
-                    if (inTable) {
-                        formattedContent += generateTable(tableRows);
-                        tableRows = [];
-                        inTable = false;
-                    }
-                    if (!inList || (trimmed.match(/^\d+\.\s/) && listType !== 'ol') || (trimmed.match(/^[-*+]\s/) && listType !== 'ul')) {
-                        if (inList) {
-                            formattedContent += generateList(listItems, listType);
-                        }
-                        listType = trimmed.match(/^\d+\.\s/) ? 'ol' : 'ul';
-                        listItems = [];
-                        inList = true;
-                    }
-                    listItems.push(trimmed.replace(/^[-*+]\s|\d+\.\s/, ''));
-                }
-                // Bold text
-                else if (trimmed.startsWith('**') && trimmed.endsWith('**') && trimmed.length > 4) {
-                    formattedContent += `<div class="highlight-box"><strong>${trimmed.slice(2, -2)}</strong></div>`;
-                }
-                // Regular paragraphs
-                else {
-                    if (inTable) {
-                        formattedContent += generateTable(tableRows);
-                        tableRows = [];
-                        inTable = false;
-                    }
-                    if (inList) {
-                        formattedContent += generateList(listItems, listType);
-                        listItems = [];
-                        inList = false;
-                    }
-                    
-                    if (trimmed.length > 10) {
-                        // Process inline formatting
-                        let processedLine = trimmed
-                            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                            .replace(/\*(.*?)\*/g, '<em>$1</em>')
-                            .replace(/`(.*?)`/g, '<code>$1</code>');
-                        
-                        formattedContent += `<p>${processedLine}</p>`;
-                    }
-                }
-            }
-
-            // Close any remaining open elements
+        if (!trimmed) {
+            // Close any open elements
             if (inTable) {
                 formattedContent += generateTable(tableRows);
+                tableRows = [];
+                inTable = false;
             }
             if (inList) {
                 formattedContent += generateList(listItems, listType);
+                listItems = [];
+                inList = false;
             }
-
-            return { formattedContent, toc };
+            formattedContent += '<br>';
+            continue;
         }
+
+        // Headers
+        if (trimmed.startsWith('# ')) {
+            const headerText = processInlineFormatting(trimmed.substring(2));
+            const id = 'header-' + headerText.toLowerCase().replace(/[^a-z0-9]/g, '-');
+            formattedContent += `<h1 id="${id}">${headerText}</h1>`;
+            toc.push({ level: 1, text: headerText.replace(/<[^>]*>/g, ''), id });
+        } else if (trimmed.startsWith('## ')) {
+            const headerText = processInlineFormatting(trimmed.substring(3));
+            const id = 'header-' + headerText.toLowerCase().replace(/[^a-z0-9]/g, '-');
+            formattedContent += `<h2 id="${id}">${headerText}</h2>`;
+            toc.push({ level: 2, text: headerText.replace(/<[^>]*>/g, ''), id });
+        } else if (trimmed.startsWith('### ')) {
+            const headerText = processInlineFormatting(trimmed.substring(4));
+            const id = 'header-' + headerText.toLowerCase().replace(/[^a-z0-9]/g, '-');
+            formattedContent += `<h3 id="${id}">${headerText}</h3>`;
+            toc.push({ level: 3, text: headerText.replace(/<[^>]*>/g, ''), id });
+        } else if (trimmed.startsWith('#### ')) {
+            const headerText = processInlineFormatting(trimmed.substring(5));
+            const id = 'header-' + headerText.toLowerCase().replace(/[^a-z0-9]/g, '-');
+            formattedContent += `<h4 id="${id}">${headerText}</h4>`;
+            toc.push({ level: 4, text: headerText.replace(/<[^>]*>/g, ''), id });
+        }
+        // Tables
+        else if (trimmed.startsWith('|') && trimmed.endsWith('|')) {
+            if (!inList) inList = false;
+            if (!inTable) inTable = true;
+            tableRows.push(processInlineFormatting(trimmed));
+        }
+        // Lists
+        else if (trimmed.match(/^[-*+]\s/) || trimmed.match(/^\d+\.\s/)) {
+            if (inTable) {
+                formattedContent += generateTable(tableRows);
+                tableRows = [];
+                inTable = false;
+            }
+            if (!inList || (trimmed.match(/^\d+\.\s/) && listType !== 'ol') || (trimmed.match(/^[-*+]\s/) && listType !== 'ul')) {
+                if (inList) {
+                    formattedContent += generateList(listItems, listType);
+                }
+                listType = trimmed.match(/^\d+\.\s/) ? 'ol' : 'ul';
+                listItems = [];
+                inList = true;
+            }
+            // Process inline formatting untuk list items
+            const listItemText = processInlineFormatting(trimmed.replace(/^[-*+]\s|\d+\.\s/, ''));
+            listItems.push(listItemText);
+        }
+        // Bold-only lines (highlight boxes)
+        else if (trimmed.startsWith('**') && trimmed.endsWith('**') && trimmed.length > 4) {
+            if (inTable) {
+                formattedContent += generateTable(tableRows);
+                tableRows = [];
+                inTable = false;
+            }
+            if (inList) {
+                formattedContent += generateList(listItems, listType);
+                listItems = [];
+                inList = false;
+            }
+            formattedContent += `<div class="highlight-box"><strong>${trimmed.slice(2, -2)}</strong></div>`;
+        }
+        // Regular paragraphs
+        else {
+            if (inTable) {
+                formattedContent += generateTable(tableRows);
+                tableRows = [];
+                inTable = false;
+            }
+            if (inList) {
+                formattedContent += generateList(listItems, listType);
+                listItems = [];
+                inList = false;
+            }
+            
+            // Process inline formatting untuk semua teks
+            const processedLine = processInlineFormatting(trimmed);
+            formattedContent += `<p>${processedLine}</p>`;
+        }
+    }
+
+    // Close any remaining open elements
+    if (inTable) {
+        formattedContent += generateTable(tableRows);
+    }
+    if (inList) {
+        formattedContent += generateList(listItems, listType);
+    }
+
+    return { formattedContent, toc };
+}
 
         function generateTable(rows) {
             if (rows.length === 0) return '';
