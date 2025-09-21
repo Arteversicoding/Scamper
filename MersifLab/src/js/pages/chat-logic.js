@@ -466,6 +466,10 @@ function addMessageToChat(message, sender, isLoading = false, timestamp = null) 
 }
 
 
+// ===== State untuk melacak status percakapan =====
+let conversationHistory = [];
+let isFirstInteraction = true;
+
 async function handleChatInteraction(prompt) {
     if (!currentUser) {
         addMessageToChat("Anda harus login untuk memulai percakapan.", "ai");
@@ -473,12 +477,25 @@ async function handleChatInteraction(prompt) {
     }
 
     addMessageToChat(prompt, 'user');
+    
+    // Tambahkan ke riwayat percakapan
+    conversationHistory.push({ sender: 'user', text: prompt });
+    
+    // Batasi riwayat untuk menghindari memori berlebihan
+    if (conversationHistory.length > 10) {
+        conversationHistory = conversationHistory.slice(-10);
+    }
 
     const loadingMsgId = addMessageToChat('', 'ai', true);
 
     try {
         let responseText;
         const isCurriculumRequest = detectCurriculumRequest(prompt);
+        
+        // Deteksi apakah ini percakapan pertama atau sambungan
+        const isGreeting = detectGreeting(prompt);
+        const isFollowUp = conversationHistory.length > 1;
+        const shouldIntroduce = isFirstInteraction && isGreeting;
 
         // Langkah 1: Ambil document_id dari URL (opsional)
         const urlParams = new URLSearchParams(window.location.search);
@@ -634,7 +651,7 @@ async function handleChatInteraction(prompt) {
 
         console.log(`✅ Dokumen aktif: ${documentName}`);
 
-        // Langkah 3: Siapkan prompt ke AI
+        // Langkah 3: Siapkan prompt ke AI dengan konteks percakapan
         let contextualPrompt;
         if (isCurriculumRequest) {
             contextualPrompt = `
@@ -648,9 +665,7 @@ Berdasarkan dokumen di atas, jawab permintaan pengguna:
 ${prompt}
             `.trim();
         } else {
-            let hasIntroduced = false; // state global, bisa disimpan per user
             if (document.id === 'all_documents_general') {
-                const isGreeting = detectGeneralConversation(prompt);
                 const isOffTopic = detectOffTopic(prompt);
 
                 contextualPrompt = `
@@ -661,37 +676,43 @@ ${documentText}
 === AKHIR PENGETAHUAN UTAMA ===
 
 === KONTEKS PERCAKAPAN ===
-Jenis pesan: ${isGreeting ? 'SAPAAN/PERKENALAN' : isOffTopic ? 'PERTANYAAN DI LUAR TOPIK' : 'PERTANYAAN UMUM'}
+Status: ${shouldIntroduce ? 'PERKENALAN_PERTAMA' : isFollowUp ? 'SAMBUNGAN_PERCKAPAN' : 'PERCAKAPAN_UMUM'}
+${isFollowUp ? 'Riwayat percakapan terbaru:\n' + conversationHistory.slice(-3).map(msg => `${msg.sender}: ${msg.text}`).join('\n') : ''}
 
 PANDUAN RESPONS:
-1. UNTUK SAPAAN/PERKENALAN:
+1. UNTUK PERKENALAN PERTAMA:
    - Sapa dengan ramah dan hangat 😊
    - Perkenalkan diri sebagai asisten pembelajaran IPAS SD
    - Sebutkan topik-topik yang bisa dibantu: Lingkungan Buatan, Siklus Air, Keanekaragaman, Tata Surya, Ekonomi Kreatif
+   - JANGAN ulang perkenalan ini di percakapan selanjutnya
 
-2. UNTUK PERTANYAAN IPAS:
+2. UNTUK SAMBUNGAN PERCAKAPAN:
+   - Langsung jawab pertanyaan tanpa perkenalan ulang
+   - Pertahankan sifat ramah dan membantu
+   - Gunakan konteks dari riwayat percakapan jika relevan
+
+3. UNTUK PERTANYAAN IPAS:
    - Gunakan pengetahuan dari dokumen di atas sebagai referensi utama
    - Berikan penjelasan yang mudah dipahami siswa SD
    - Berikan contoh konkret dan menarik
 
-3. UNTUK PERTANYAAN DI LUAR TOPIK IPAS:
+4. UNTUK PERTANYAAN DI LUAR TOPIK IPAS:
    - Tetap sopan dan antusias, jangan menolak secara kaku
    - Berikan respons singkat yang menunjukkan apresiasi
    - Arahkan kembali ke IPAS dengan cara yang natural dan menarik
    - Contoh: "Wah, itu topik yang menarik! Saya lebih ahli di bidang IPAS SD sih. Ngomong-ngomong, tahukah kamu tentang [topik IPAS yang menarik]? 🌟"
 
-4. GAYA KOMUNIKASI:
+5. GAYA KOMUNIKASI:
    - Bahasa ramah, hangat, dan mudah dipahami
-   - Gunakan emoji yang sesuai (tapi jangan berlebihan)
+   - Gunakan emoji yang sesuai (tapi jangan berlebihan, maksimal 2 per respons)
    - Bersikap seperti kakak/teman yang suka membantu belajar
    - Kadang gunakan pertanyaan balik untuk membuat percakapan lebih interaktif
+   - JANGAN ulangi perkenalan diri di setiap respons
 
-Pesan pengguna: ${prompt}
-        `.trim();
-
-        hasIntroduced = true; // setelah pertama kali perkenalan, tandai
-    } else {
-        contextualPrompt = `
+Pertanyaan/Pesan: ${prompt}
+            `.trim();
+            } else {
+                contextualPrompt = `
 Anda adalah asisten AI yang ramah dan membantu dalam pembelajaran IPAS SD, dengan fokus khusus pada materi: "${documentName}".
 
 === MATERI PEMBELAJARAN SPESIFIK ===
@@ -703,8 +724,8 @@ PANDUAN RESPONS:
 - Fokus pada materi dari dokumen di atas
 - Jika pertanyaan di luar topik dokumen ini, tetap sopan dan arahkan ke materi yang tersedia
 - Gunakan bahasa yang sesuai untuk siswa SD
-- Sesekali gunakan emoji untuk membuat lebih menarik
-
+- Sesekali gunakan emoji untuk membuat lebih menarik (maksimal 2)
+- JANGAN perkenalkan diri berulang kali
 
 Pertanyaan: ${prompt}
             `.trim();
@@ -714,9 +735,13 @@ Pertanyaan: ${prompt}
         // Langkah 4: Kirim ke AI
         responseText = await getResponseWithContext(documentText, contextualPrompt);
 
-        // Catatan sumber dihilangkan untuk pengalaman pengguna yang lebih bersih
+        // Update status interaksi pertama
+        if (isFirstInteraction) {
+            isFirstInteraction = false;
+        }
 
-
+        // Tambahkan respons AI ke riwayat
+        conversationHistory.push({ sender: 'ai', text: responseText });
 
         // Render respons
         if (isCurriculumRequest && responseText.includes('"cp":')) {
@@ -896,13 +921,19 @@ function detectCurriculumRequest(prompt) {
 }
 
 // Function to detect if conversation is greeting or general chat
-function detectGeneralConversation(prompt) {
+function detectGreeting(prompt) {
     const greetings = [
         'halo', 'hai', 'hello', 'hi', 'selamat pagi', 'selamat siang', 'selamat sore', 'selamat malam',
-        'apa kabar', 'how are you', 'apa itu', 'siapa kamu', 'perkenalkan diri', 'kenalan'
+        'apa kabar', 'how are you', 'perkenalkan diri', 'kenalan', 'siapa kamu', 'kamu siapa'
     ];
-    const promptLower = prompt.toLowerCase();
-    return greetings.some(greeting => promptLower.includes(greeting)) || prompt.length < 20;
+    const promptLower = prompt.toLowerCase().trim();
+    
+    // Check for exact matches or very short greetings
+    return greetings.some(greeting => 
+        promptLower === greeting || 
+        promptLower.startsWith(greeting + ' ') ||
+        promptLower.includes(' ' + greeting)
+    ) || promptLower.length < 5;
 }
 
 // Function to detect off-topic questions
