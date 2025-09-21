@@ -1,3 +1,3 @@
 @echo off
 echo Starting MersifLab Development Server...
-python -m http.server 8080 -d src
+python -m http.server 7500 -d src

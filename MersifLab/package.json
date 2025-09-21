@@ -4,7 +4,7 @@
   "description": "Platform pembelajaran teknologi dan inovasi dengan AI Gemini",
   "main": "index.html",
   "scripts": {
-    "start": "live-server src --port=8080",
+    "start": "live-server src --port=7500",
     "build": "echo 'No build step required for static site'",
     "deploy": "firebase deploy",
     "test": "echo 'No tests specified'"
