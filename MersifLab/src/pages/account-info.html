@@ -10,7 +10,7 @@
         body { font-family: 'Inter', sans-serif; }
         .nav-button.active { color: #00a2e1; }
     </style>
-    <script type="module" src="auth-guard.js"></script>
+    <script type="module" src="../js/services/auth-guard.js"></script>
 </head>
 <body class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-cyan-100">
 
@@ -182,90 +182,163 @@
         </div>
     </div>
 
-    <script type="module">
-        import { AuthService } from './auth-service.js';
-        import { getFirestore, doc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-        import { app } from './firebase-init.js';
-
-        const db = getFirestore(app);
-        const authService = new AuthService();
-
+    <script>
         document.addEventListener('DOMContentLoaded', async () => {
-            await loadUserData();
-            
-            document.getElementById('profile-form').addEventListener('submit', handleProfileUpdate);
+            await initializeAuth();
+            setupSettingsHandlers();
         });
 
-        async function loadUserData() {
+        async function initializeAuth() {
             try {
-                await authService.waitForAuthInit();
-                const currentUser = authService.getCurrentUser();
+                // Set up real-time auth state listener
+                const { onAuthStateChanged } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js');
+                const { auth } = await import('../js/services/firebase-init.js');
                 
-                if (currentUser) {
-                    // Load basic auth data
-                    document.getElementById('email').value = currentUser.email || '';
-                    
-                    // Try to load additional data from Firestore
-                    try {
-                        const userDoc = await getDoc(doc(db, "users", currentUser.uid));
-                        if (userDoc.exists()) {
-                            const userData = userDoc.data();
-                            
-                            document.getElementById('fullName').value = userData.displayName || `${userData.firstName || ''} ${userData.lastName || ''}`.trim() || currentUser.displayName || '';
-                            document.getElementById('gender').value = userData.gender || '';
-                            document.getElementById('age').value = userData.age || '';
-                            document.getElementById('profession').value = userData.profession || '';
-                            document.getElementById('institution').value = userData.institution || '';
-                        } else {
-                            // Use basic auth data if no Firestore doc
-                            document.getElementById('fullName').value = currentUser.displayName || '';
-                        }
-                    } catch (error) {
-                        console.log('Could not load additional user data:', error);
-                        document.getElementById('fullName').value = currentUser.displayName || '';
-                    }
-                }
+                onAuthStateChanged(auth, async (user) => {
+                    await updateAccountInfo(user);
+                });
+                
             } catch (error) {
-                console.error('Error loading user data:', error);
+                console.error('Error initializing auth:', error);
+                updateAccountInfo(null);
             }
         }
 
-        async function handleProfileUpdate(e) {
-            e.preventDefault();
-            
+        async function updateAccountInfo(user) {
             try {
-                const currentUser = authService.getCurrentUser();
-                if (!currentUser) {
-                    alert('Anda harus login untuk mengupdate profil.');
-                    return;
+                if (user) {
+                    // Get additional user data from Firestore
+                    const { getDoc, doc } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
+                    const { db } = await import('../js/services/firebase-init.js');
+                    
+                    let userData = {
+                        uid: user.uid,
+                        email: user.email,
+                        displayName: user.displayName || user.email,
+                        photoURL: user.photoURL,
+                        role: 'user',
+                        createdAt: user.metadata?.creationTime
+                    };
+                    
+                    // Try to get additional data from Firestore
+                    try {
+                        const userDoc = await getDoc(doc(db, "users", user.uid));
+                        if (userDoc.exists()) {
+                            const firestoreData = userDoc.data();
+                            userData = {
+                                ...userData,
+                                displayName: firestoreData.displayName || `${firestoreData.firstName} ${firestoreData.lastName}` || userData.displayName,
+                                role: firestoreData.role || 'user',
+                                profession: firestoreData.profession,
+                                institution: firestoreData.institution,
+                                createdAt: firestoreData.createdAt || userData.createdAt
+                            };
+                        }
+                    } catch (firestoreError) {
+                        console.log('Could not fetch Firestore data, using basic auth data');
+                    }
+                    
+                    // Update account info
+                    document.getElementById('account-email').textContent = userData.email || 'No email';
+                    document.getElementById('account-type').textContent = userData.profession || 'Pendidik';
+                    
+                    // Format join date
+                    if (userData.createdAt) {
+                        const joinDate = userData.createdAt instanceof Date ? userData.createdAt : new Date(userData.createdAt);
+                        document.getElementById('join-date').textContent = joinDate.toLocaleDateString('id-ID', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                        });
+                    } else {
+                        document.getElementById('join-date').textContent = 'Tidak diketahui';
+                    }
+
+                } else {
+                    // User is logged out
+                    document.getElementById('account-email').textContent = 'Not logged in';
+                    document.getElementById('account-type').textContent = 'Guest';
+                    document.getElementById('join-date').textContent = 'N/A';
                 }
-
-                const formData = {
-                    displayName: document.getElementById('fullName').value,
-                    gender: document.getElementById('gender').value,
-                    age: parseInt(document.getElementById('age').value) || null,
-                    profession: document.getElementById('profession').value,
-                    institution: document.getElementById('institution').value,
-                    updatedAt: new Date()
-                };
-
-                // Update Firestore
-                await updateDoc(doc(db, "users", currentUser.uid), formData);
-
-                // Show success message
-                const successMessage = document.getElementById('success-message');
-                successMessage.classList.remove('hidden');
-                setTimeout(() => {
-                    successMessage.classList.add('hidden');
-                }, 3000);
-
-                // Scroll to top to show message
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-
             } catch (error) {
-                console.error('Error updating profile:', error);
-                alert('Gagal menyimpan perubahan. Silakan coba lagi.');
+                console.error('Error updating account info:', error);
+                // Fallback values
+                document.getElementById('account-email').textContent = 'Error loading';
+                document.getElementById('account-type').textContent = 'Unknown';
+                document.getElementById('join-date').textContent = 'Error loading';
             }
+        }
+
+        function setupSettingsHandlers() {
+            // Email notifications toggle
+            const emailNotifications = document.getElementById('email-notifications');
+            emailNotifications.addEventListener('change', (e) => {
+                const isEnabled = e.target.checked;
+                localStorage.setItem('emailNotifications', isEnabled);
+                showSuccessMessage(`Notifikasi email ${isEnabled ? 'diaktifkan' : 'dinonaktifkan'}`);
+            });
+
+            // Push notifications toggle
+            const pushNotifications = document.getElementById('push-notifications');
+            pushNotifications.addEventListener('change', (e) => {
+                const isEnabled = e.target.checked;
+                localStorage.setItem('pushNotifications', isEnabled);
+                showSuccessMessage(`Notifikasi push ${isEnabled ? 'diaktifkan' : 'dinonaktifkan'}`);
+            });
+
+            // Dark mode toggle
+            const darkMode = document.getElementById('dark-mode');
+            darkMode.addEventListener('change', (e) => {
+                const isEnabled = e.target.checked;
+                localStorage.setItem('darkMode', isEnabled);
+                if (isEnabled) {
+                    document.body.classList.add('dark');
+                } else {
+                    document.body.classList.remove('dark');
+                }
+                showSuccessMessage(`Mode gelap ${isEnabled ? 'diaktifkan' : 'dinonaktifkan'}`);
+            });
+
+            // Load saved settings
+            loadSavedSettings();
+        }
+
+        function loadSavedSettings() {
+            // Load email notifications setting
+            const emailNotifications = localStorage.getItem('emailNotifications');
+            if (emailNotifications !== null) {
+                document.getElementById('email-notifications').checked = emailNotifications === 'true';
+            }
+
+            // Load push notifications setting
+            const pushNotifications = localStorage.getItem('pushNotifications');
+            if (pushNotifications !== null) {
+                document.getElementById('push-notifications').checked = pushNotifications === 'true';
+            }
+
+            // Load dark mode setting
+            const darkMode = localStorage.getItem('darkMode');
+            if (darkMode !== null) {
+                const isDarkMode = darkMode === 'true';
+                document.getElementById('dark-mode').checked = isDarkMode;
+                if (isDarkMode) {
+                    document.body.classList.add('dark');
+                }
+            }
+        }
+
+        function showSuccessMessage(message) {
+            const successMessage = document.getElementById('success-message');
+            successMessage.querySelector('div').innerHTML = `
+                <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                </svg>
+                ${message}
+            `;
+            successMessage.classList.remove('hidden');
+            setTimeout(() => {
+                successMessage.classList.add('hidden');
+            }, 3000);
         }
     </script>
 </body>
